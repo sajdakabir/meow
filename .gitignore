@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+renderer/.next/
+renderer/out/
+
+# Electron build output
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Cache
+.cache/

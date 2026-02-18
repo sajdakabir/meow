@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #0f1729;
+  --color-bg-secondary: #1a2332;
+  --color-bg-card: #1e293b;
+  --color-bg-hover: #253040;
+  --color-accent: #6366f1;
+  --color-accent-light: #818cf8;
+  --color-accent-glow: rgba(99, 102, 241, 0.3);
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-border: #334155;
+  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 999px;
+}
+
+/* Draggable title bar region */
+.drag-region {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Smooth transitions for everything */
+* {
+  transition-property: background-color, border-color, color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Animated gradient background */
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.aurora-bg {
+  background: linear-gradient(
+    135deg,
+    #0f1729 0%,
+    #1a1040 25%,
+    #0f2027 50%,
+    #1a1040 75%,
+    #0f1729 100%
+  );
+  background-size: 400% 400%;
+  animation: aurora 20s ease infinite;
+}
+
+/* Timer ring animation */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--color-accent-glow)); }
+  50% { filter: drop-shadow(0 0 20px var(--color-accent-glow)); }
+}
+
+.timer-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Breathing animation for focus pals */
+@keyframes breathe {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.03) translateY(-2px); }
+}
+
+.breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Gentle float */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Blink animation */
+@keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+.blink {
+  animation: blink 4s ease-in-out infinite;
+}
+
+/* Sleepy animation */
+@keyframes sleepy {
+  0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+  50% { transform: scale(0.97) translateY(2px) rotate(-3deg); }
+}
+
+.sleepy {
+  animation: sleepy 3s ease-in-out infinite;
+}
+
+/* Sound wave animation */
+@keyframes sound-wave {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+/* Volume slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--color-border);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin-top: -5px;
+  box-shadow: 0 0 6px var(--color-accent-glow);
+}
