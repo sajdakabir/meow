@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="aurora-bg text-text-primary font-sans overflow-hidden select-none">
+      <body className="text-text-primary font-sans overflow-hidden select-none">
         {children}
       </body>
     </html>

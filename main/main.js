@@ -1,58 +1,37 @@
-const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, Notification, protocol, net } = require('electron');
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, Notification, protocol, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const url = require('url');
 
 const isDev = process.env.ZEN_DEV === '1';
 const DEV_URL = 'http://localhost:3456';
 const OUT_DIR = path.join(__dirname, '..', 'renderer', 'out');
 
-let mainWindow = null;
+let popoverWindow = null;
 let tray = null;
 let isQuitting = false;
 
-// Mime type lookup
+// ── Mime types ──
 function getMimeType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const types = {
-    '.html': 'text/html',
-    '.js': 'application/javascript',
-    '.css': 'text/css',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.wav': 'audio/wav',
-    '.mp3': 'audio/mpeg',
-    '.woff': 'font/woff',
-    '.woff2': 'font/woff2',
-    '.ttf': 'font/ttf',
+    '.html': 'text/html', '.js': 'application/javascript',
+    '.css': 'text/css', '.json': 'application/json',
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon', '.wav': 'audio/wav', '.mp3': 'audio/mpeg',
+    '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf',
     '.txt': 'text/plain',
   };
   return types[ext] || 'application/octet-stream';
 }
 
-// Register custom protocol to serve static files
+// ── Custom protocol for static files ──
 function setupProtocol() {
   protocol.handle('app', (request) => {
     let reqPath = new URL(request.url).pathname;
-
-    // Remove leading slash
-    if (reqPath.startsWith('/')) {
-      reqPath = reqPath.substring(1);
-    }
-
-    // Default to index.html
-    if (!reqPath || reqPath === '') {
-      reqPath = 'index.html';
-    }
+    if (reqPath.startsWith('/')) reqPath = reqPath.substring(1);
+    if (!reqPath || reqPath === '') reqPath = 'index.html';
 
     const filePath = path.join(OUT_DIR, reqPath);
-
-    // Security: ensure the resolved path is within OUT_DIR
     const resolvedPath = path.resolve(filePath);
     if (!resolvedPath.startsWith(path.resolve(OUT_DIR))) {
       return new Response('Forbidden', { status: 403 });
@@ -65,29 +44,65 @@ function setupProtocol() {
           headers: { 'Content-Type': getMimeType(resolvedPath) },
         });
       }
-    } catch (e) {
-      // Fall through
-    }
+    } catch (e) { /* fall through */ }
 
     return new Response('Not Found', { status: 404 });
   });
 }
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 420,
-    height: 680,
-    minWidth: 380,
-    minHeight: 500,
+// ── Position window below the tray icon (menubar popover style) ──
+function getPopoverPosition() {
+  const trayBounds = tray.getBounds();
+  const windowBounds = popoverWindow.getBounds();
+  const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
+
+  let x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2);
+  let y = Math.round(trayBounds.y + trayBounds.height + 4);
+
+  // Keep within screen bounds
+  const maxX = display.workArea.x + display.workArea.width - windowBounds.width;
+  const maxY = display.workArea.y + display.workArea.height - windowBounds.height;
+  x = Math.max(display.workArea.x, Math.min(x, maxX));
+  y = Math.min(y, maxY);
+
+  return { x, y };
+}
+
+function showPopover() {
+  if (!popoverWindow) return;
+  const { x, y } = getPopoverPosition();
+  popoverWindow.setPosition(x, y, false);
+  popoverWindow.show();
+  popoverWindow.focus();
+}
+
+function hidePopover() {
+  if (popoverWindow) popoverWindow.hide();
+}
+
+function togglePopover() {
+  if (popoverWindow && popoverWindow.isVisible()) {
+    hidePopover();
+  } else {
+    showPopover();
+  }
+}
+
+// ── Create the popover window ──
+function createPopoverWindow() {
+  popoverWindow = new BrowserWindow({
+    width: 360,
+    height: 420,
+    show: false,
     frame: false,
-    transparent: false,
-    resizable: true,
+    transparent: true,
+    resizable: false,
+    movable: false,
     alwaysOnTop: true,
-    skipTaskbar: false,
+    skipTaskbar: true,
     hasShadow: true,
-    backgroundColor: '#0f1729',
-    titleBarStyle: 'hidden',
-    trafficLightPosition: { x: -100, y: -100 },
+    backgroundColor: '#00000000',
+    roundedCorners: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -96,29 +111,30 @@ function createWindow() {
   });
 
   if (isDev) {
-    mainWindow.loadURL(DEV_URL);
-    mainWindow.webContents.openDevTools({ mode: 'detach' });
+    popoverWindow.loadURL(DEV_URL);
   } else {
-    // Use custom protocol to serve static files (fixes /_next/ paths)
-    mainWindow.loadURL('app://bundle/index.html');
+    popoverWindow.loadURL('app://bundle/index.html');
   }
 
-  mainWindow.on('close', (e) => {
+  // Hide when focus is lost (like a real popover)
+  popoverWindow.on('blur', () => {
+    // Small delay to allow clicking tray icon to toggle
+    setTimeout(() => {
+      if (popoverWindow && !popoverWindow.isDestroyed() && !popoverWindow.isFocused()) {
+        hidePopover();
+      }
+    }, 150);
+  });
+
+  popoverWindow.on('close', (e) => {
     if (!isQuitting) {
       e.preventDefault();
-      mainWindow.hide();
+      hidePopover();
     }
-  });
-
-  mainWindow.on('blur', () => {
-    mainWindow.webContents.send('window-blur');
-  });
-
-  mainWindow.on('focus', () => {
-    mainWindow.webContents.send('window-focus');
   });
 }
 
+// ── Tray setup ──
 function createTray() {
   const iconPath = path.join(__dirname, '..', 'renderer', 'public', 'tray-icon.png');
   let trayIcon;
@@ -136,119 +152,90 @@ function createTray() {
   tray = new Tray(trayIcon);
   tray.setToolTip('Zen Focus');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Show/Hide',
-      click: () => {
-        if (mainWindow.isVisible()) {
-          mainWindow.hide();
-        } else {
-          mainWindow.show();
-          mainWindow.focus();
-        }
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Start Focus',
-      click: () => {
-        mainWindow.show();
-        mainWindow.webContents.send('tray-start-focus');
-      },
-    },
-    {
-      label: 'Pause',
-      click: () => {
-        mainWindow.webContents.send('tray-pause');
-      },
-    },
-    {
-      label: 'Reset',
-      click: () => {
-        mainWindow.webContents.send('tray-reset');
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Always on Top',
-      type: 'checkbox',
-      checked: true,
-      click: (menuItem) => {
-        mainWindow.setAlwaysOnTop(menuItem.checked);
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit Zen Focus',
-      click: () => {
-        isQuitting = true;
-        app.quit();
-      },
-    },
-  ]);
-
-  tray.setContextMenu(contextMenu);
-
+  // Left click toggles the popover
   tray.on('click', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
-    }
+    togglePopover();
+  });
+
+  // Right click shows context menu
+  tray.on('right-click', () => {
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Start Timer (25 min)',
+        accelerator: 'CommandOrControl+T',
+        click: () => {
+          showPopover();
+          popoverWindow.webContents.send('tray-start-focus');
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Settings...',
+        accelerator: 'CommandOrControl+,',
+        click: () => {
+          showPopover();
+          popoverWindow.webContents.send('open-settings');
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit Zen Focus',
+        accelerator: 'CommandOrControl+Q',
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        },
+      },
+    ]);
+    tray.popUpContextMenu(contextMenu);
   });
 }
 
+// ── Global shortcuts ──
 function registerShortcuts() {
-  globalShortcut.register('CommandOrControl+Shift+F', () => {
-    if (mainWindow.isVisible()) {
-      mainWindow.hide();
-    } else {
-      mainWindow.show();
-      mainWindow.focus();
-    }
+  globalShortcut.register('CommandOrControl+T', () => {
+    showPopover();
+    popoverWindow.webContents.send('tray-start-focus');
   });
 }
 
-// IPC Handlers
+// ── IPC handlers ──
 ipcMain.on('show-notification', (_, { title, body }) => {
   new Notification({ title, body }).show();
 });
 
 ipcMain.on('update-tray-title', (_, title) => {
-  if (tray) {
-    tray.setTitle(title);
-  }
-});
-
-ipcMain.on('window-minimize', () => {
-  mainWindow.hide();
+  if (tray) tray.setTitle(title);
 });
 
 ipcMain.on('window-close', () => {
-  isQuitting = true;
-  app.quit();
+  hidePopover();
 });
 
-// App lifecycle
+ipcMain.on('resize-window', (_, { height }) => {
+  if (popoverWindow) {
+    const bounds = popoverWindow.getBounds();
+    popoverWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height });
+  }
+});
+
+// ── App lifecycle ──
+app.dock && app.dock.hide(); // Hide from dock — menubar-only app
+
 app.whenReady().then(() => {
   setupProtocol();
-  createWindow();
   createTray();
+  createPopoverWindow();
   registerShortcuts();
 
-  app.on('activate', () => {
-    if (mainWindow) {
-      mainWindow.show();
-      mainWindow.focus();
-    }
-  });
+  // Show on first launch
+  setTimeout(() => showPopover(), 500);
+
+  app.on('activate', () => showPopover());
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('before-quit', () => {

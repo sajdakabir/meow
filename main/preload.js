@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onStartFocus: (callback) => ipcRenderer.on('tray-start-focus', callback),
   onPause: (callback) => ipcRenderer.on('tray-pause', callback),
   onReset: (callback) => ipcRenderer.on('tray-reset', callback),
+  onOpenSettings: (callback) => ipcRenderer.on('open-settings', callback),
 
   // Window events
   onWindowBlur: (callback) => ipcRenderer.on('window-blur', callback),
