@@ -1,33 +1,38 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// ── FAQ Data ──
+// ── Data ──
+const PALS = [
+  { id: 'cat', name: 'Luna', icon: '🐱' },
+  { id: 'fox', name: 'Rusty', icon: '🦊' },
+  { id: 'owl', name: 'Hoot', icon: '🦉' },
+  { id: 'panda', name: 'Bamboo', icon: '🐼' },
+  { id: 'bunny', name: 'Clover', icon: '🐰' },
+];
+
+const SOUNDS = [
+  { id: 'rain', name: 'Rain', icon: '🌧️' },
+  { id: 'forest', name: 'Forest', icon: '🌲' },
+  { id: 'ocean', name: 'Ocean', icon: '🌊' },
+  { id: 'fire', name: 'Fire', icon: '🔥' },
+  { id: 'cafe', name: 'Cafe', icon: '☕' },
+  { id: 'wind', name: 'Wind', icon: '💨' },
+  { id: 'birds', name: 'Birds', icon: '🐦' },
+  { id: 'thunder', name: 'Thunder', icon: '⛈️' },
+];
+
+const MODES = ['work', 'shortBreak', 'longBreak'];
+const MODE_DURATIONS = { work: 25 * 60, shortBreak: 5 * 60, longBreak: 15 * 60 };
+const MODE_LABELS = { work: 'Task', shortBreak: 'Short Break', longBreak: 'Long Break' };
+
 const FAQS = [
-  {
-    q: 'Can I try meow for free?',
-    a: 'Yes! meow comes with a free trial so you can explore all features before committing.',
-  },
-  {
-    q: 'Do I have to pay for updates?',
-    a: 'Nope. All future updates are included with your purchase. Buy once, enjoy forever.',
-  },
-  {
-    q: 'What Macs are supported?',
-    a: 'meow works on macOS 12 (Monterey) and later, on both Intel and Apple Silicon Macs.',
-  },
-  {
-    q: 'Can I hide the animal & timer?',
-    a: 'Of course! You can toggle the focus pal and timer visibility anytime from the settings.',
-  },
-  {
-    q: 'Does meow collect any data?',
-    a: 'No. meow runs entirely offline on your machine. We don\'t collect any analytics or personal data whatsoever.',
-  },
-  {
-    q: 'How can I give feedback or report a bug?',
-    a: 'We\'d love to hear from you! Reach out via email or open an issue on our GitHub.',
-  },
+  { q: 'Can I try meow for free?', a: 'Yes! meow comes with a free trial so you can explore all features before committing.' },
+  { q: 'Do I have to pay for updates?', a: 'Nope. All future updates are included with your purchase. Buy once, enjoy forever.' },
+  { q: 'What Macs are supported?', a: 'meow works on macOS 12 (Monterey) and later, on both Intel and Apple Silicon Macs.' },
+  { q: 'Can I hide the animal & timer?', a: 'Of course! You can toggle the focus pal and timer visibility anytime from the settings.' },
+  { q: 'Does meow collect any data?', a: 'No. meow runs entirely offline on your machine. We don\'t collect any analytics or personal data whatsoever.' },
+  { q: 'How can I give feedback or report a bug?', a: 'We\'d love to hear from you! Reach out via email or open an issue on our GitHub.' },
 ];
 
 // ── FAQ Item ──
@@ -36,16 +41,14 @@ function FAQItem({ q, a }) {
   return (
     <button
       onClick={() => setOpen(!open)}
-      className="w-full text-left py-5 border-b border-border last:border-b-0 group"
+      className="w-full text-left py-5 border-b border-gray-200 last:border-b-0 group"
     >
       <div className="flex items-center justify-between">
-        <span className="text-text font-medium group-hover:text-accent transition-colors">
-          {q}
-        </span>
+        <span className="text-gray-900 font-medium group-hover:text-indigo-500 transition-colors">{q}</span>
         <motion.span
           animate={{ rotate: open ? 45 : 0 }}
           transition={{ duration: 0.15 }}
-          className="text-text-muted text-xl flex-shrink-0 ml-4"
+          className="text-gray-400 text-xl flex-shrink-0 ml-4"
         >
           +
         </motion.span>
@@ -57,7 +60,7 @@ function FAQItem({ q, a }) {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="text-text-secondary text-sm leading-relaxed overflow-hidden pt-2"
+            className="text-gray-500 text-sm leading-relaxed overflow-hidden pt-2"
           >
             {a}
           </motion.p>
@@ -67,158 +70,293 @@ function FAQItem({ q, a }) {
   );
 }
 
-// ── Mac Screen with App Widget ──
-function MacScreen() {
-  const [hovered, setHovered] = useState(false);
+// ── Notch / Dynamic Island ──
+function Notch() {
+  const [expanded, setExpanded] = useState(false);
+  const notchRef = useRef(null);
+
+  // Timer state
+  const [mode, setMode] = useState('work');
+  const [timeLeft, setTimeLeft] = useState(MODE_DURATIONS.work);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef(null);
+
+  // Panels
+  const [showSounds, setShowSounds] = useState(false);
+  const [showPalPicker, setShowPalPicker] = useState(false);
+  const [selectedPal, setSelectedPal] = useState(0);
+  const [activeSounds, setActiveSounds] = useState({});
+
+  const totalTime = MODE_DURATIONS[mode];
+  const progress = 1 - timeLeft / totalTime;
+  const isBreak = mode !== 'work';
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const activeCount = Object.keys(activeSounds).length;
+  const pal = PALS[selectedPal];
+
+  // Timer tick
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTimeLeft((t) => {
+          if (t <= 1) { setIsRunning(false); return 0; }
+          return t - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (notchRef.current && !notchRef.current.contains(e.target)) {
+        setExpanded(false);
+        setShowSounds(false);
+        setShowPalPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const toggle = () => {
+    if (timeLeft === 0) setTimeLeft(totalTime);
+    setIsRunning(!isRunning);
+  };
+
+  const cycleMode = () => {
+    if (isRunning) return;
+    const idx = MODES.indexOf(mode);
+    const next = MODES[(idx + 1) % MODES.length];
+    setMode(next);
+    setTimeLeft(MODE_DURATIONS[next]);
+  };
+
+  const toggleSound = (id) => {
+    setActiveSounds((prev) => {
+      const next = { ...prev };
+      if (next[id]) delete next[id];
+      else next[id] = true;
+      return next;
+    });
+  };
 
   return (
-    <div className="relative group">
-      {/* "Try hovering on this!" label */}
+    <div className="absolute left-1/2 -translate-x-1/2 top-0 z-10" ref={notchRef}>
+      <AnimatePresence mode="wait">
+        {!expanded ? (
+          /* ── Collapsed notch pill ── */
+          <motion.button
+            key="collapsed"
+            onClick={() => setExpanded(true)}
+            className="flex items-center gap-3 bg-black rounded-b-2xl px-4 py-1.5 cursor-pointer hover:scale-[1.02] transition-transform"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span className="text-base">{pal.icon}</span>
+            <span className="text-white text-sm font-medium tabular-nums">
+              {display}
+            </span>
+          </motion.button>
+        ) : (
+          /* ── Expanded widget ── */
+          <motion.div
+            key="expanded"
+            className="bg-[#1a1a1a] rounded-b-2xl overflow-hidden shadow-2xl shadow-black/50"
+            style={{ width: 300 }}
+            initial={{ opacity: 0, scale: 0.9, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -5 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          >
+            {/* Timer */}
+            <div className="px-3 pt-3 pb-2">
+              <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3 flex items-center gap-3">
+                <button
+                  onClick={cycleMode}
+                  className="bg-[#3a3a3a] hover:bg-[#444] text-white text-sm font-semibold px-3 py-1.5 rounded-xl min-w-16 text-center transition-colors"
+                >
+                  {Math.ceil(timeLeft / 60)} min
+                </button>
+                <div className="flex-1 text-center">
+                  {isRunning ? (
+                    <span className="text-white text-lg font-medium tabular-nums tracking-wide">{display}</span>
+                  ) : (
+                    <span className="text-[#a0a0a0] text-sm">{MODE_LABELS[mode]}</span>
+                  )}
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggle}
+                  className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  {isRunning ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white ml-0.5">
+                      <path d="M8 5.14v14l11-7-11-7z" />
+                    </svg>
+                  )}
+                </motion.button>
+              </div>
+              {isRunning && (
+                <div className="mt-2 h-1 bg-[#2a2a2a] rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }}
+                    animate={{ width: `${progress * 100}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Pal + Music */}
+            <div className="px-3 pb-3 flex gap-2">
+              <button
+                onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); }}
+                className="flex-1 bg-[#2a2a2a] hover:bg-[#333] rounded-2xl px-4 py-2.5 flex items-center gap-2.5 transition-colors"
+              >
+                <span className="text-sm text-[#a0a0a0] font-medium">Focus Pal</span>
+                <span className="text-lg ml-auto">{pal.icon}</span>
+              </button>
+              <button
+                onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); }}
+                className="flex-1 bg-[#2a2a2a] hover:bg-[#333] rounded-2xl px-4 py-2.5 flex items-center gap-2.5 transition-colors"
+              >
+                <span className="text-sm text-[#a0a0a0] font-medium">Music</span>
+                <span className={`text-[11px] font-bold ml-auto px-2 py-0.5 rounded-md ${
+                  activeCount > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'bg-[#3a3a3a] text-[#888]'
+                }`}>
+                  {activeCount > 0 ? 'ON' : 'OFF'}
+                </span>
+              </button>
+            </div>
+
+            {/* Pal picker */}
+            <AnimatePresence>
+              {showPalPicker && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden px-3"
+                >
+                  <div className="bg-[#2a2a2a] rounded-2xl p-3 mb-3">
+                    <div className="flex gap-2 justify-center">
+                      {PALS.map((p, i) => (
+                        <button
+                          key={p.id}
+                          onClick={() => { setSelectedPal(i); setShowPalPicker(false); }}
+                          className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl transition-all ${
+                            i === selectedPal
+                              ? 'bg-indigo-500/20 ring-1 ring-indigo-400/40 scale-110'
+                              : 'bg-[#1a1a1a]/60 hover:bg-[#333]'
+                          }`}
+                        >
+                          {p.icon}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              {showSounds && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden px-3"
+                >
+                  <div className="bg-[#2a2a2a] rounded-2xl p-3 mb-3">
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {SOUNDS.map((s) => {
+                        const active = !!activeSounds[s.id];
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => toggleSound(s.id)}
+                            className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-center transition-all ${
+                              active
+                                ? 'bg-indigo-500/15 ring-1 ring-indigo-500/30'
+                                : 'bg-[#1a1a1a]/60 hover:bg-[#333]'
+                            }`}
+                          >
+                            <span className="text-base">{s.icon}</span>
+                            <span className={`text-[9px] ${active ? 'text-indigo-300' : 'text-[#666]'}`}>{s.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Mac Screen ──
+function MacScreen() {
+  return (
+    <div>
       <div className="flex justify-center mb-3">
-        <p className="font-hand text-text-muted text-lg flex items-center gap-1">
+        <p className="font-hand text-gray-400 text-lg flex items-center gap-1">
           Try hovering on this!
           <span className="inline-block translate-y-1">↓</span>
         </p>
       </div>
 
-      <motion.div
-        className="relative cursor-pointer"
-        onHoverStart={() => setHovered(true)}
-        onHoverEnd={() => setHovered(false)}
-      >
-        {/* Mac screen frame */}
-        <div className="rounded-xl overflow-hidden border border-black/10 shadow-2xl shadow-black/15">
-          {/* Menu bar */}
-          <div className="relative bg-[#e8e5df]/90 backdrop-blur-sm flex items-center justify-between px-4 py-1.5 text-[11px] text-black/70">
-            {/* Left - Apple icon */}
-            <div className="flex items-center gap-3">
-              <svg width="13" height="16" viewBox="0 0 814 1000" fill="currentColor" className="opacity-80">
-                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8-62.2 0-106.9-56.3-155.5-124.7C46.7 710.4 0 googletag.pubads() 524.9 0 389.3c0-174.1 113.2-265.7 223.1-265.7 68 0 124.7 44.8 165.9 44.8 39.5 0 101.1-47.4 177.4-47.4 28.3 0 130 2.5 197.7 97.9zM554.1 159.4c31.4-38.2 53.4-91.3 53.4-144.4 0-7.4-.6-14.8-1.9-20.8C548.8 0 480.2 41.5 445.6 86.3c-27 34.5-55.6 87.5-55.6 141.2 0 8.1 1.3 16.1 1.9 18.6 3.2.6 8.4 1.3 13.5 1.3 53.4 0 117.5-37.3 148.7-87.9z"/>
+      {/* Mac frame */}
+      <div className="rounded-xl overflow-visible shadow-2xl shadow-black/15 border border-black/10">
+        {/* Wallpaper + menu bar layered */}
+        <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: '16/10' }}>
+          {/* Wallpaper fills entire screen */}
+          <img
+            src="/mountain.jpg"
+            alt="Desktop wallpaper"
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+
+          {/* Translucent menu bar on top */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 h-7 bg-white/30 backdrop-blur-xl">
+            {/* Apple icon */}
+            <svg width="12" height="15" viewBox="0 0 170 200" fill="black" className="opacity-70">
+              <path d="M150.4 68.2c-1.2.9-21.7 12.5-21.7 38.2 0 29.8 26.1 40.3 26.9 40.6-.1.6-4.2 14.4-13.8 28.5-8.6 12.4-17.5 24.7-31.2 24.7s-17.2-7.9-32.9-7.9c-15.4 0-20.8 8.2-33.3 8.2s-21.5-11.3-31.2-25C3.7 160.7 0 132.2 0 105.2c0-43.2 28.1-66.1 55.8-66.1 14.7 0 27 9.7 36.2 9.7 8.9 0 23-10.3 39.8-10.3 6.4 0 29.3.5 44.6 20.7zM113.1 32c6.3-7.7 10.7-18.3 10.7-29 0-1.5-.1-3-.4-4.2C113.2 0 100.7 8.3 93.7 17.3c-5.4 6.9-10.8 17.5-10.8 28.2 0 1.6.2 3.3.3 3.7.6.1 1.7.3 2.7.3 9.4 0 117.5-37.3 148.7-87.9z"/>
+            </svg>
+
+            {/* Notch */}
+            <Notch />
+
+            {/* Status icons */}
+            <div className="flex items-center gap-2.5">
+              <svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50">
+                <path d="M2 8.5a14 14 0 0120 0" />
+                <path d="M5.5 12a9 9 0 0113 0" />
+                <path d="M9 15.5a4 4 0 016 0" />
+              </svg>
+              <svg width="20" height="10" viewBox="0 0 30 14" fill="black" className="opacity-50">
+                <rect x="0" y="1" width="25" height="12" rx="2.5" fill="none" stroke="black" strokeWidth="1.5" />
+                <rect x="26" y="4.5" width="2.5" height="5" rx="1" opacity="0.4" />
+                <rect x="2" y="3" width="16" height="8" rx="1.5" />
               </svg>
             </div>
-
-            {/* Center - notch area (where our app lives) */}
-            <div className="absolute left-1/2 -translate-x-1/2 top-0">
-              {/* App popover widget */}
-              <motion.div
-                animate={{ y: hovered ? 0 : -2 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <div className="bg-[#1a1a1a] rounded-b-2xl overflow-hidden shadow-xl shadow-black/30 min-w-[280px]">
-                  {/* Timer row */}
-                  <div className="p-2.5">
-                    <div className="bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2.5">
-                      <div className="bg-[#3a3a3a] text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
-                        25 min
-                      </div>
-                      <div className="flex-1 text-center text-[#a0a0a0] text-xs">
-                        Task
-                      </div>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-white ml-0.5">
-                          <path d="M8 5.14v14l11-7-11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Pal + Music row */}
-                  <div className="px-2.5 pb-2.5 flex gap-1.5">
-                    <div className="flex-1 bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2">
-                      <span className="text-xs text-[#a0a0a0] font-medium">Focus Pal</span>
-                      <motion.span
-                        className="text-sm ml-auto"
-                        animate={hovered ? { rotate: [0, -15, 15, -15, 0] } : {}}
-                        transition={{ duration: 0.5 }}
-                      >
-                        🐍
-                      </motion.span>
-                    </div>
-                    <div className="flex-1 bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2">
-                      <span className="text-xs text-[#a0a0a0] font-medium">Music</span>
-                      <span className="text-[10px] font-bold ml-auto px-1.5 py-0.5 rounded-md bg-[#3a3a3a] text-[#888]">
-                        OFF
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Expandable sounds panel on hover */}
-                  <AnimatePresence>
-                    {hovered && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="px-2.5 pb-2.5">
-                          <div className="bg-[#2a2a2a] rounded-xl p-2.5">
-                            <div className="grid grid-cols-4 gap-1">
-                              {[
-                                ['🌧️', 'Rain', true],
-                                ['🌲', 'Forest', true],
-                                ['🌊', 'Ocean', false],
-                                ['🔥', 'Fire', false],
-                                ['☕', 'Cafe', false],
-                                ['💨', 'Wind', false],
-                                ['🐦', 'Birds', false],
-                                ['⛈️', 'Thunder', false],
-                              ].map(([icon, name, active]) => (
-                                <div
-                                  key={name}
-                                  className={`aspect-square rounded-lg flex flex-col items-center justify-center gap-0.5 text-center ${
-                                    active
-                                      ? 'bg-[#6366f1]/15 ring-1 ring-[#6366f1]/30'
-                                      : 'bg-[#1a1a1a]/60'
-                                  }`}
-                                >
-                                  <span className="text-sm">{icon}</span>
-                                  <span className={`text-[8px] ${active ? 'text-[#818cf8]' : 'text-[#666]'}`}>
-                                    {name}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right - status icons */}
-            <div className="flex items-center gap-2 text-black/60">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60">
-                <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
-                <line x1="23" y1="13" x2="23" y2="11"/>
-              </svg>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-60">
-                <path d="M5 12.55a11 11 0 0114 0"/>
-                <path d="M1.42 9a16 16 0 0121.16 0"/>
-                <path d="M8.53 16.11a6 6 0 016.95 0"/>
-                <circle cx="12" cy="20" r="1" fill="currentColor"/>
-              </svg>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-60">
-                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
-                <polyline points="17 2 12 7 7 2"/>
-              </svg>
-            </div>
-          </div>
-
-          {/* Wallpaper */}
-          <div className="relative">
-            <img
-              src="/mountain.jpg"
-              alt="Mountain wallpaper"
-              className="w-full h-auto block"
-              draggable={false}
-            />
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -226,32 +364,25 @@ function MacScreen() {
 // ── Page ──
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-sans">
-      {/* ── Nav ── */}
+    <div className="min-h-screen bg-white">
+      {/* Nav */}
       <nav className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
-        <a href="#" className="text-lg font-bold tracking-tight text-text">
-          meow
-        </a>
-        <a
-          href="#faq"
-          className="text-sm text-text-secondary hover:text-text transition-colors"
-        >
-          FAQ
-        </a>
+        <a href="#" className="text-lg font-bold tracking-tight text-gray-900">meow</a>
+        <a href="#faq" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">FAQ</a>
       </nav>
 
-      {/* ── Mac Screen Hero ── */}
+      {/* Mac Screen */}
       <section className="max-w-3xl mx-auto px-6 pt-8 pb-12">
         <MacScreen />
       </section>
 
-      {/* ── Headline & CTA ── */}
+      {/* Headline & CTA */}
       <section className="max-w-2xl mx-auto px-6 pb-20 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="font-hand text-6xl sm:text-7xl md:text-8xl leading-[1.05] text-text"
+          className="font-hand text-6xl sm:text-7xl md:text-8xl leading-[1.05] text-gray-900"
         >
           Focus mode. Made delightful.
         </motion.h1>
@@ -260,7 +391,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-6 text-lg text-text-secondary max-w-md mx-auto leading-relaxed"
+          className="mt-6 text-lg text-gray-500 max-w-md mx-auto leading-relaxed"
         >
           Transform your Mac's menu bar into a focus space with calming music
           and a companion by your side.
@@ -274,7 +405,7 @@ export default function Home() {
         >
           <a
             href="#"
-            className="inline-flex items-center gap-2 bg-text text-white font-medium px-6 py-3 rounded-full hover:bg-gray-800 transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-gray-900 text-white font-medium px-6 py-3 rounded-full hover:bg-gray-800 transition-colors text-sm"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
@@ -285,16 +416,16 @@ export default function Home() {
           </a>
           <a
             href="#"
-            className="inline-flex items-center gap-2 bg-white text-text font-medium px-6 py-3 rounded-full border border-border hover:border-text-muted transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-white text-gray-900 font-medium px-6 py-3 rounded-full border border-gray-200 hover:border-gray-400 transition-colors text-sm"
           >
             Purchase $4.99
           </a>
         </motion.div>
       </section>
 
-      {/* ── FAQ ── */}
+      {/* FAQ */}
       <section id="faq" className="max-w-2xl mx-auto px-6 py-16">
-        <h2 className="font-hand text-4xl text-text mb-8">Questions</h2>
+        <h2 className="font-hand text-4xl text-gray-900 mb-8">Questions</h2>
         <div>
           {FAQS.map((faq) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} />
@@ -302,11 +433,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
+      {/* Footer */}
       <footer className="max-w-2xl mx-auto px-6 py-8 text-center">
-        <p className="text-sm text-text-muted">
-          Made with care &middot; meow
-        </p>
+        <p className="text-sm text-gray-400">Made with care &middot; meow</p>
       </footer>
     </div>
   );
