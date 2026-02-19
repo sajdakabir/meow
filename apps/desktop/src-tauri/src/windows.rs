@@ -13,13 +13,14 @@ pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>>
     let sw = monitor.size().width as f64 / scale;
     let sh = monitor.size().height as f64 / scale;
 
-    if let Some(companion) = app.get_webview_window("companion") {
-        let cw = 160.0;
-        let ch = 100.0;
-        companion.set_position(tauri::LogicalPosition::new(sw / 2.0 - cw / 2.0, sh - ch))?;
-        companion.set_ignore_cursor_events(true)?;
-        companion.show()?;
-    }
+    // Companion window disabled until companion page is created
+    // if let Some(companion) = app.get_webview_window("companion") {
+    //     let cw = 160.0;
+    //     let ch = 100.0;
+    //     companion.set_position(tauri::LogicalPosition::new(sw / 2.0 - cw / 2.0, sh - ch))?;
+    //     companion.set_ignore_cursor_events(true)?;
+    //     companion.show()?;
+    // }
 
     Ok(())
 }

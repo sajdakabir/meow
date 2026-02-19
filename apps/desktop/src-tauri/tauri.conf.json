@@ -30,21 +30,6 @@
         "shadow": false,
         "visible": false,
         "focus": false
-      },
-      {
-        "label": "companion",
-        "url": "companion.html",
-        "title": "",
-        "width": 160,
-        "height": 100,
-        "decorations": false,
-        "transparent": true,
-        "resizable": false,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "shadow": false,
-        "visible": false,
-        "focus": false
       }
     ]
   },
