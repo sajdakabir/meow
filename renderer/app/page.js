@@ -104,8 +104,8 @@ export default function Home() {
   }, [timer.start, timer.pause, timer.reset]);
 
   return (
-    <div className="p-2" ref={containerRef}>
-      <div className="bg-bg-primary rounded-2xl overflow-hidden flex flex-col shadow-2xl border border-white/[0.06]">
+    <div className="px-3 pb-3" ref={containerRef}>
+      <div className="bg-bg-primary rounded-b-2xl overflow-hidden flex flex-col shadow-lg shadow-black/40 border border-white/[0.06] border-t-0">
 
         {/* ── Timer row (compact pill) ── */}
         <div className="px-3 pt-3 pb-2">

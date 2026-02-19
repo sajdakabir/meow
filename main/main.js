@@ -59,7 +59,7 @@ function getPopoverPosition() {
   const windowBounds = popoverWindow.getBounds();
 
   const x = Math.round(display.workArea.x + display.workArea.width / 2 - windowBounds.width / 2);
-  const y = display.workArea.y + 4;
+  const y = display.workArea.y;
 
   return { x, y };
 }
@@ -179,9 +179,8 @@ function createPopoverWindow() {
     movable: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    hasShadow: true,
+    hasShadow: false,
     backgroundColor: '#00000000',
-    roundedCorners: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
