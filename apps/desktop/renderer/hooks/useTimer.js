@@ -129,12 +129,6 @@ export function useTimer(settings = {}) {
     };
   }, [isRunning, handleComplete]);
 
-  // Update tray title when timer is running
-  useEffect(() => {
-    import('../lib/tauri-bridge').then(({ tauriBridge }) => {
-      tauriBridge.updateTrayTitle(isRunning ? display : '');
-    });
-  }, [display, isRunning]);
 
   return {
     mode,

@@ -9,13 +9,26 @@ use tauri::{AppHandle, Manager};
 pub fn start(handle: AppHandle) {
     std::thread::spawn(move || {
         let mut tick: u64 = 0;
+        let mut error_streak: u32 = 0;
         loop {
             std::thread::sleep(std::time::Duration::from_millis(50));
             tick += 1;
 
             let (cx, cy) = match Mouse::get_mouse_position() {
-                Mouse::Position { x, y } => (x as f64, y as f64),
-                Mouse::Error => continue,
+                Mouse::Position { x, y } => {
+                    error_streak = 0;
+                    (x as f64, y as f64)
+                }
+                Mouse::Error => {
+                    // If we keep getting errors while popover is visible, hide it
+                    error_streak += 1;
+                    if error_streak > 20
+                        && windows::POPOVER_VISIBLE.load(Ordering::SeqCst)
+                    {
+                        let _ = windows::hide_popover(&handle, true);
+                    }
+                    continue;
+                }
             };
 
             let monitor = match handle.primary_monitor() {
@@ -42,24 +55,16 @@ pub fn start(handle: AppHandle) {
                     if let Some(win) = handle.get_webview_window("popover") {
                         match (win.outer_position(), win.inner_size()) {
                             (Ok(pos), Ok(size)) => {
-                                // Try both logical (/ scale) and raw physical coords
-                                // since mouse_position crate may return either
-                                let m = 20.0;
+                                // mouse_position (CGEventGetLocation) returns logical
+                                // points on macOS. Tauri returns physical pixels.
+                                // Convert window coords to logical by dividing by scale.
+                                let m = 30.0;
                                 let wx = pos.x as f64 / scale;
                                 let wy = pos.y as f64 / scale;
                                 let ww = size.width as f64 / scale;
                                 let wh = size.height as f64 / scale;
-                                let logical = cx >= wx - m && cx <= wx + ww + m
-                                    && cy >= wy - m && cy <= wy + wh + m;
-
-                                let wx2 = pos.x as f64;
-                                let wy2 = pos.y as f64;
-                                let ww2 = size.width as f64;
-                                let wh2 = size.height as f64;
-                                let physical = cx >= wx2 - m && cx <= wx2 + ww2 + m
-                                    && cy >= wy2 - m && cy <= wy2 + wh2 + m;
-
-                                logical || physical
+                                cx >= wx - m && cx <= wx + ww + m
+                                    && cy >= wy - m && cy <= wy + wh + m
                             }
                             _ => false,
                         }

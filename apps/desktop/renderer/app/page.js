@@ -131,25 +131,47 @@ export default function Home() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              onClick={() => setExpanded(true)}
-              className="no-drag flex items-center justify-between px-5 py-2.5 cursor-pointer"
+              className="no-drag flex items-center px-3 py-2 gap-2"
             >
-              <div className="flex items-center gap-2.5">
+              <div
+                className="flex items-center gap-2.5 flex-1 cursor-pointer px-1.5"
+                onClick={() => setExpanded(true)}
+              >
                 <span className="text-lg">{pal.icon}</span>
-                <span className="text-[13px] text-text-secondary font-medium">
-                  {timer.isRunning
-                    ? timer.mode === 'work' ? 'Focusing' : 'Break'
-                    : 'meow'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                {timer.isRunning && (
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }} />
-                )}
                 <span className="text-[13px] text-text-primary font-semibold tabular-nums">
                   {timerDisplay}
                 </span>
+              </div>
+              <div className="flex items-center gap-1">
+                {timer.isRunning ? (
+                  <>
+                    <button
+                      onClick={timer.pause}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                      </svg>
+                    </button>
+                    <button
+                      onClick={timer.reset}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={timer.start}
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5">
+                      <path d="M8 5.14v14l11-7-11-7z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
             </motion.div>
           ) : (
