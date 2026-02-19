@@ -118,7 +118,6 @@ export default function Home() {
         style={{
           background: '#1c1c1e',
           borderRadius: expanded ? 22 : 14,
-          boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 2px 12px rgba(0,0,0,0.3)',
         }}
         layout
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
