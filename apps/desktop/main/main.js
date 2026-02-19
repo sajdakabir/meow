@@ -2,11 +2,15 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, nativeImage, No
 const path = require('path');
 const fs = require('fs');
 
+// Fix transparency on macOS — must be called before app.whenReady()
+app.disableHardwareAcceleration();
+
 const isDev = process.env.ZEN_DEV === '1';
 const DEV_URL = 'http://localhost:3456';
 const OUT_DIR = path.join(__dirname, '..', 'renderer', 'out');
 
 let popoverWindow = null;
+let companionWindow = null;
 let tray = null;
 let isQuitting = false;
 let hideTimeout = null;
@@ -111,7 +115,6 @@ function startMouseCheck() {
       return;
     }
 
-    // Don't auto-hide if the window is focused (user is interacting)
     if (popoverWindow.isFocused()) return;
 
     const point = screen.getCursorScreenPoint();
@@ -125,7 +128,6 @@ function startMouseCheck() {
       point.y <= bounds.y + bounds.height + margin
     );
 
-    // Also keep alive if cursor is in the notch trigger zone
     const display = screen.getPrimaryDisplay();
     const centerX = display.bounds.x + display.bounds.width / 2;
     const inTriggerZone = (
@@ -146,7 +148,7 @@ function stopMouseCheck() {
   }
 }
 
-// ── Notch hover detection: show popover when cursor pushes to top-center ──
+// ── Notch hover detection ──
 function startNotchDetection() {
   notchDetectionInterval = setInterval(() => {
     if (popoverWindow && popoverWindow.isVisible()) return;
@@ -155,7 +157,6 @@ function startNotchDetection() {
     const display = screen.getPrimaryDisplay();
     const centerX = display.bounds.x + display.bounds.width / 2;
 
-    // Trigger when cursor is pushed to the very top of the screen, near center
     const inNotchArea = (
       point.y <= display.bounds.y + 5 &&
       Math.abs(point.x - centerX) < 120
@@ -170,8 +171,8 @@ function startNotchDetection() {
 // ── Create the popover window ──
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
-    width: 340,
-    height: 148,
+    width: 350,
+    height: 160,
     show: false,
     frame: false,
     transparent: true,
@@ -194,7 +195,6 @@ function createPopoverWindow() {
     popoverWindow.loadURL('app://bundle/index.html');
   }
 
-  // Hide when window loses focus (user clicked elsewhere)
   popoverWindow.on('blur', () => {
     setTimeout(() => {
       if (popoverWindow && !popoverWindow.isDestroyed() && !popoverWindow.isFocused()) {
@@ -222,6 +222,51 @@ function createPopoverWindow() {
   });
 }
 
+// ── Create the desktop companion window (sleeping pal at bottom of screen) ──
+function createCompanionWindow() {
+  const display = screen.getPrimaryDisplay();
+  const companionWidth = 160;
+  const companionHeight = 100;
+
+  companionWindow = new BrowserWindow({
+    width: companionWidth,
+    height: companionHeight,
+    x: Math.round(display.workArea.x + display.workArea.width / 2 - companionWidth / 2),
+    y: display.workArea.y + display.workArea.height - companionHeight,
+    show: true,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    hasShadow: false,
+    focusable: false,
+    backgroundColor: '#00000000',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  // Click-through — mouse events pass to windows below
+  companionWindow.setIgnoreMouseEvents(true, { forward: true });
+
+  if (isDev) {
+    companionWindow.loadURL(DEV_URL + '/companion');
+  } else {
+    companionWindow.loadURL('app://bundle/companion.html');
+  }
+
+  companionWindow.on('close', (e) => {
+    if (!isQuitting) {
+      e.preventDefault();
+      companionWindow.hide();
+    }
+  });
+}
+
 // ── Tray setup ──
 function createTray() {
   const iconPath = path.join(__dirname, '..', 'renderer', 'public', 'tray-icon.png');
@@ -240,12 +285,10 @@ function createTray() {
   tray = new Tray(trayIcon);
   tray.setToolTip('Zen Focus');
 
-  // Left click toggles the popover
   tray.on('click', () => {
     togglePopover();
   });
 
-  // Hover to show (macOS)
   if (process.platform === 'darwin') {
     tray.on('mouse-enter', () => {
       if (!popoverWindow || !popoverWindow.isVisible()) {
@@ -254,7 +297,6 @@ function createTray() {
     });
   }
 
-  // Right click shows context menu
   tray.on('right-click', () => {
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -326,10 +368,10 @@ app.whenReady().then(() => {
   setupProtocol();
   createTray();
   createPopoverWindow();
+  createCompanionWindow();
   registerShortcuts();
   startNotchDetection();
 
-  // Show on first launch
   setTimeout(() => showPopover(true), 500);
 
   app.on('activate', () => showPopover(true));

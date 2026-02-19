@@ -45,7 +45,7 @@ export default function Home() {
     try { localStorage.setItem('zen-focus-pal', String(selectedPal)); } catch {}
   }, [selectedPal]);
 
-  // Dynamic window resize — report content height to Electron
+  // Dynamic window resize
   useEffect(() => {
     if (!containerRef.current || typeof window === 'undefined') return;
     const api = window.electronAPI;
@@ -55,7 +55,7 @@ export default function Home() {
       for (const entry of entries) {
         const height = Math.ceil(
           entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
-        ) + 16; // account for outer padding
+        ) + 16;
         api.resizeWindow(height);
       }
     });
@@ -104,11 +104,24 @@ export default function Home() {
   }, [timer.start, timer.pause, timer.reset]);
 
   return (
-    <div className="px-3 pb-3" ref={containerRef}>
-      <div className="bg-bg-primary rounded-b-2xl overflow-hidden flex flex-col shadow-lg shadow-black/40 border border-white/[0.06] border-t-0">
+    <div className="p-2" ref={containerRef}>
+      <div className="bg-bg-primary rounded-2xl overflow-hidden flex flex-col border border-white/[0.06]">
+
+        {/* ── Settings gear (top-right) ── */}
+        <div className="flex items-center justify-end px-3 pt-2">
+          <button
+            onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); }}
+            className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
 
         {/* ── Timer row (compact pill) ── */}
-        <div className="px-3 pt-3 pb-2">
+        <div className="px-3 pb-2">
           <div className="bg-bg-card rounded-2xl px-4 py-3 flex items-center gap-3">
             {/* Duration / mode button */}
             <button
@@ -133,7 +146,7 @@ export default function Home() {
               ) : (
                 <span className="text-text-muted text-sm">
                   {timer.mode === 'work'
-                    ? 'Task'
+                    ? 'Task (optional)'
                     : timer.mode === 'shortBreak'
                     ? 'Short Break'
                     : 'Long Break'}
@@ -205,7 +218,6 @@ export default function Home() {
 
         {/* ── Expandable panels ── */}
         <AnimatePresence>
-          {/* Settings (opened via tray right-click → Settings) */}
           {showSettings && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
@@ -251,7 +263,6 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* Sounds panel */}
           {showSounds && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
@@ -260,7 +271,6 @@ export default function Home() {
               className="overflow-hidden px-3"
             >
               <div className="bg-bg-card rounded-2xl p-3 mb-3">
-                {/* Master volume */}
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -299,7 +309,6 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* Pal picker panel */}
           {showPalPicker && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}

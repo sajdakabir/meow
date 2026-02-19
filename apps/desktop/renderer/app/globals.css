@@ -60,6 +60,17 @@ html, body {
 }
 .walk { animation: walk 6s ease-in-out infinite; }
 
+/* Zzz floating animation for companion */
+@keyframes zzz-float {
+  0%, 100% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; }
+  80% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-15px); }
+}
+.zzz-1 { animation: zzz-float 3s ease-in-out infinite; }
+.zzz-2 { animation: zzz-float 3s ease-in-out infinite 0.6s; }
+.zzz-3 { animation: zzz-float 3s ease-in-out infinite 1.2s; }
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;

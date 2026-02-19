@@ -67,106 +67,156 @@ function FAQItem({ q, a }) {
   );
 }
 
-// ── App Preview (mock of the actual desktop app) ──
-function AppPreview() {
+// ── Mac Screen with App Widget ──
+function MacScreen() {
   const [hovered, setHovered] = useState(false);
+
   return (
     <div className="relative group">
-      <p className="text-center text-text-muted text-sm mb-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        Try hovering on this!
-      </p>
+      {/* "Try hovering on this!" label */}
+      <div className="flex justify-center mb-3">
+        <p className="font-hand text-text-muted text-lg flex items-center gap-1">
+          Try hovering on this!
+          <span className="inline-block translate-y-1">↓</span>
+        </p>
+      </div>
+
       <motion.div
-        className="relative mx-auto max-w-[340px] cursor-pointer"
+        className="relative cursor-pointer"
         onHoverStart={() => setHovered(true)}
         onHoverEnd={() => setHovered(false)}
-        animate={{ y: hovered ? -4 : 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
       >
-        {/* Shadow */}
-        <div className="absolute -inset-4 bg-black/5 rounded-3xl blur-2xl transition-all group-hover:bg-black/10 group-hover:blur-3xl" />
-
-        {/* Card */}
-        <div className="relative bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-xl">
-          {/* Timer row */}
-          <div className="p-3">
-            <div className="bg-[#2a2a2a] rounded-2xl px-4 py-3 flex items-center gap-3">
-              <div className="bg-[#3a3a3a] text-white text-sm font-semibold px-3 py-1.5 rounded-xl">
-                25 min
-              </div>
-              <div className="flex-1 text-center text-[#a0a0a0] text-sm">
-                Task
-              </div>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center bg-white/10">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-white ml-0.5">
-                  <path d="M8 5.14v14l11-7-11-7z" />
-                </svg>
-              </div>
+        {/* Mac screen frame */}
+        <div className="rounded-xl overflow-hidden border border-black/10 shadow-2xl shadow-black/15">
+          {/* Menu bar */}
+          <div className="relative bg-[#e8e5df]/90 backdrop-blur-sm flex items-center justify-between px-4 py-1.5 text-[11px] text-black/70">
+            {/* Left - Apple icon */}
+            <div className="flex items-center gap-3">
+              <svg width="13" height="16" viewBox="0 0 814 1000" fill="currentColor" className="opacity-80">
+                <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8-62.2 0-106.9-56.3-155.5-124.7C46.7 710.4 0 googletag.pubads() 524.9 0 389.3c0-174.1 113.2-265.7 223.1-265.7 68 0 124.7 44.8 165.9 44.8 39.5 0 101.1-47.4 177.4-47.4 28.3 0 130 2.5 197.7 97.9zM554.1 159.4c31.4-38.2 53.4-91.3 53.4-144.4 0-7.4-.6-14.8-1.9-20.8C548.8 0 480.2 41.5 445.6 86.3c-27 34.5-55.6 87.5-55.6 141.2 0 8.1 1.3 16.1 1.9 18.6 3.2.6 8.4 1.3 13.5 1.3 53.4 0 117.5-37.3 148.7-87.9z"/>
+              </svg>
             </div>
-          </div>
 
-          {/* Pal + Music row */}
-          <div className="px-3 pb-3 flex gap-2">
-            <div className="flex-1 bg-[#2a2a2a] rounded-2xl px-4 py-2.5 flex items-center gap-2.5">
-              <span className="text-sm text-[#a0a0a0] font-medium">Focus Pal</span>
-              <motion.span
-                className="text-lg ml-auto"
-                animate={hovered ? { rotate: [0, -10, 10, -10, 0] } : {}}
-                transition={{ duration: 0.5 }}
-              >
-                🐱
-              </motion.span>
-            </div>
-            <div className="flex-1 bg-[#2a2a2a] rounded-2xl px-4 py-2.5 flex items-center gap-2.5">
-              <span className="text-sm text-[#a0a0a0] font-medium">Music</span>
-              <span className="text-[11px] font-bold ml-auto px-2 py-0.5 rounded-md bg-[#6366f1]/20 text-[#818cf8]">
-                ON
-              </span>
-            </div>
-          </div>
-
-          {/* Sounds grid */}
-          <AnimatePresence>
-            {hovered && (
+            {/* Center - notch area (where our app lives) */}
+            <div className="absolute left-1/2 -translate-x-1/2 top-0">
+              {/* App popover widget */}
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden"
+                animate={{ y: hovered ? 0 : -2 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                <div className="px-3 pb-3">
-                  <div className="bg-[#2a2a2a] rounded-2xl p-3">
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {[
-                        ['🌧️', 'Rain', true],
-                        ['🌲', 'Forest', true],
-                        ['🌊', 'Ocean', false],
-                        ['🔥', 'Fire', false],
-                        ['☕', 'Cafe', false],
-                        ['💨', 'Wind', false],
-                        ['🐦', 'Birds', false],
-                        ['⛈️', 'Thunder', false],
-                      ].map(([icon, name, active]) => (
-                        <div
-                          key={name}
-                          className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-center ${
-                            active
-                              ? 'bg-[#6366f1]/15 ring-1 ring-[#6366f1]/30'
-                              : 'bg-[#1a1a1a]/60'
-                          }`}
-                        >
-                          <span className="text-base">{icon}</span>
-                          <span className={`text-[9px] ${active ? 'text-[#818cf8]' : 'text-[#666]'}`}>
-                            {name}
-                          </span>
-                        </div>
-                      ))}
+                <div className="bg-[#1a1a1a] rounded-b-2xl overflow-hidden shadow-xl shadow-black/30 min-w-[280px]">
+                  {/* Timer row */}
+                  <div className="p-2.5">
+                    <div className="bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2.5">
+                      <div className="bg-[#3a3a3a] text-white text-xs font-semibold px-2.5 py-1 rounded-lg">
+                        25 min
+                      </div>
+                      <div className="flex-1 text-center text-[#a0a0a0] text-xs">
+                        Task
+                      </div>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white/10">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-white ml-0.5">
+                          <path d="M8 5.14v14l11-7-11-7z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Pal + Music row */}
+                  <div className="px-2.5 pb-2.5 flex gap-1.5">
+                    <div className="flex-1 bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2">
+                      <span className="text-xs text-[#a0a0a0] font-medium">Focus Pal</span>
+                      <motion.span
+                        className="text-sm ml-auto"
+                        animate={hovered ? { rotate: [0, -15, 15, -15, 0] } : {}}
+                        transition={{ duration: 0.5 }}
+                      >
+                        🐍
+                      </motion.span>
+                    </div>
+                    <div className="flex-1 bg-[#2a2a2a] rounded-xl px-3 py-2 flex items-center gap-2">
+                      <span className="text-xs text-[#a0a0a0] font-medium">Music</span>
+                      <span className="text-[10px] font-bold ml-auto px-1.5 py-0.5 rounded-md bg-[#3a3a3a] text-[#888]">
+                        OFF
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Expandable sounds panel on hover */}
+                  <AnimatePresence>
+                    {hovered && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-2.5 pb-2.5">
+                          <div className="bg-[#2a2a2a] rounded-xl p-2.5">
+                            <div className="grid grid-cols-4 gap-1">
+                              {[
+                                ['🌧️', 'Rain', true],
+                                ['🌲', 'Forest', true],
+                                ['🌊', 'Ocean', false],
+                                ['🔥', 'Fire', false],
+                                ['☕', 'Cafe', false],
+                                ['💨', 'Wind', false],
+                                ['🐦', 'Birds', false],
+                                ['⛈️', 'Thunder', false],
+                              ].map(([icon, name, active]) => (
+                                <div
+                                  key={name}
+                                  className={`aspect-square rounded-lg flex flex-col items-center justify-center gap-0.5 text-center ${
+                                    active
+                                      ? 'bg-[#6366f1]/15 ring-1 ring-[#6366f1]/30'
+                                      : 'bg-[#1a1a1a]/60'
+                                  }`}
+                                >
+                                  <span className="text-sm">{icon}</span>
+                                  <span className={`text-[8px] ${active ? 'text-[#818cf8]' : 'text-[#666]'}`}>
+                                    {name}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </div>
+
+            {/* Right - status icons */}
+            <div className="flex items-center gap-2 text-black/60">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-60">
+                <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/>
+                <line x1="23" y1="13" x2="23" y2="11"/>
+              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-60">
+                <path d="M5 12.55a11 11 0 0114 0"/>
+                <path d="M1.42 9a16 16 0 0121.16 0"/>
+                <path d="M8.53 16.11a6 6 0 016.95 0"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="opacity-60">
+                <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                <polyline points="17 2 12 7 7 2"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Wallpaper */}
+          <div className="relative">
+            <img
+              src="/mountain.jpg"
+              alt="Mountain wallpaper"
+              className="w-full h-auto block"
+              draggable={false}
+            />
+          </div>
         </div>
       </motion.div>
     </div>
@@ -176,9 +226,9 @@ function AppPreview() {
 // ── Page ──
 export default function Home() {
   return (
-    <div className="min-h-screen font-sans">
+    <div className="min-h-screen bg-white font-sans">
       {/* ── Nav ── */}
-      <nav className="max-w-2xl mx-auto px-6 py-6 flex items-center justify-between">
+      <nav className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
         <a href="#" className="text-lg font-bold tracking-tight text-text">
           meow
         </a>
@@ -190,17 +240,20 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="max-w-2xl mx-auto px-6 pt-16 pb-12 text-center">
+      {/* ── Mac Screen Hero ── */}
+      <section className="max-w-3xl mx-auto px-6 pt-8 pb-12">
+        <MacScreen />
+      </section>
+
+      {/* ── Headline & CTA ── */}
+      <section className="max-w-2xl mx-auto px-6 pb-20 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="font-hand text-6xl sm:text-7xl md:text-8xl leading-[1.1] text-text"
+          className="font-hand text-6xl sm:text-7xl md:text-8xl leading-[1.05] text-text"
         >
-          Focus mode.{' '}
-          <br className="sm:hidden" />
-          Made delightful.
+          Focus mode. Made delightful.
         </motion.h1>
 
         <motion.p
@@ -209,8 +262,8 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="mt-6 text-lg text-text-secondary max-w-md mx-auto leading-relaxed"
         >
-          A cozy menu-bar companion for your Mac with calming music and a focus
-          pal by your side.
+          Transform your Mac's menu bar into a focus space with calming music
+          and a companion by your side.
         </motion.p>
 
         <motion.div
@@ -232,23 +285,16 @@ export default function Home() {
           </a>
           <a
             href="#"
-            className="inline-flex items-center gap-2 bg-bg-card text-text font-medium px-6 py-3 rounded-full border border-border hover:border-text-muted transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-white text-text font-medium px-6 py-3 rounded-full border border-border hover:border-text-muted transition-colors text-sm"
           >
             Purchase $4.99
           </a>
         </motion.div>
       </section>
 
-      {/* ── App Preview ── */}
-      <section className="max-w-2xl mx-auto px-6 py-16">
-        <AppPreview />
-      </section>
-
       {/* ── FAQ ── */}
       <section id="faq" className="max-w-2xl mx-auto px-6 py-16">
-        <h2 className="font-hand text-4xl text-text mb-8">
-          Questions
-        </h2>
+        <h2 className="font-hand text-4xl text-text mb-8">Questions</h2>
         <div>
           {FAQS.map((faq) => (
             <FAQItem key={faq.q} q={faq.q} a={faq.a} />
