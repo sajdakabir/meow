@@ -91,7 +91,7 @@ const FEATURES = [
 const TESTIMONIALS = [
   { text: 'meow turned my chaotic work sessions into something I actually look forward to.', author: 'Sarah K.', role: 'Designer' },
   { text: 'The ambient sounds + timer combo is perfection. I\'ve never been this productive.', author: 'Alex M.', role: 'Developer' },
-  { text: 'So simple, so beautiful. It just sits in my menu bar and does its job perfectly.', author: 'Jamie L.', role: 'Writer' },
+  { text: 'So simple, so beautiful. It just sits in my menu bar and does its job perfectly.', author: 'Oliur Sahin', role: 'Founder' },
 ];
 
 const FAQS = [
