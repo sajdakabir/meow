@@ -27,7 +27,6 @@ export default function Home() {
   });
   const containerRef = useRef(null);
 
-  // Load persisted settings
   useEffect(() => {
     try {
       const saved = localStorage.getItem('zen-focus-settings');
@@ -45,7 +44,6 @@ export default function Home() {
     try { localStorage.setItem('zen-focus-pal', String(selectedPal)); } catch {}
   }, [selectedPal]);
 
-  // Dynamic window resize
   useEffect(() => {
     if (!containerRef.current || typeof window === 'undefined') return;
     const api = window.electronAPI;
@@ -84,7 +82,6 @@ export default function Home() {
   const pal = PALS[selectedPal];
   const isBreak = timer.mode !== 'work';
 
-  // Listen for tray commands
   useEffect(() => {
     if (typeof window === 'undefined' || !window.electronAPI) return;
     window.electronAPI.onStartFocus(() => timer.start());
@@ -104,11 +101,19 @@ export default function Home() {
   }, [timer.start, timer.pause, timer.reset]);
 
   return (
-    <div className="p-2" ref={containerRef}>
-      <div className="bg-bg-primary rounded-2xl overflow-hidden flex flex-col border border-white/[0.06]">
+    <div className="px-2 pb-2 pt-1" ref={containerRef}>
+      <div
+        className="overflow-hidden flex flex-col"
+        style={{
+          background: '#1c1c1e',
+          borderRadius: 22,
+          border: '0.5px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 2px 12px rgba(0,0,0,0.3)',
+        }}
+      >
 
-        {/* ── Settings gear (top-right) ── */}
-        <div className="flex items-center justify-end px-3 pt-2">
+        {/* ── Settings gear ── */}
+        <div className="flex items-center justify-end px-4 pt-2.5">
           <button
             onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); }}
             className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
@@ -120,10 +125,13 @@ export default function Home() {
           </button>
         </div>
 
-        {/* ── Timer row (compact pill) ── */}
-        <div className="px-3 pb-2">
-          <div className="bg-bg-card rounded-2xl px-4 py-3 flex items-center gap-3">
-            {/* Duration / mode button */}
+        {/* ── Timer row ── */}
+        <div className="px-4 pb-2.5">
+          <div
+            className="px-4 py-3 flex items-center gap-3"
+            style={{ background: '#2c2c2e', borderRadius: 16 }}
+          >
+            {/* Duration / mode */}
             <button
               onClick={() => {
                 if (!timer.isRunning) {
@@ -132,12 +140,13 @@ export default function Home() {
                   timer.setMode(modes[(idx + 1) % modes.length]);
                 }
               }}
-              className="no-drag bg-bg-active/80 text-text-primary text-sm font-semibold px-3 py-1.5 rounded-xl min-w-[64px] text-center hover:bg-bg-hover transition-colors"
+              className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-[64px] text-center hover:bg-bg-active transition-colors"
+              style={{ background: '#3a3a3c', borderRadius: 12 }}
             >
               {Math.ceil(timer.timeLeft / 60)} min
             </button>
 
-            {/* Center: task label or countdown */}
+            {/* Center: label or countdown */}
             <div className="flex-1 text-center">
               {timer.isRunning ? (
                 <span className="text-text-primary text-lg font-medium tabular-nums tracking-wide">
@@ -158,7 +167,8 @@ export default function Home() {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={timer.toggle}
-              className="no-drag w-9 h-9 rounded-full flex items-center justify-center bg-text-primary/10 hover:bg-text-primary/20 transition-colors"
+              className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+              style={{ background: 'rgba(255,255,255,0.08)' }}
             >
               {timer.isRunning ? (
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
@@ -172,9 +182,9 @@ export default function Home() {
             </motion.button>
           </div>
 
-          {/* Progress bar (when running) */}
+          {/* Progress bar */}
           {timer.isRunning && (
-            <div className="mt-2 h-1 bg-bg-card rounded-full overflow-hidden">
+            <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: '#2c2c2e' }}>
               <motion.div
                 className="h-full rounded-full"
                 style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }}
@@ -185,32 +195,26 @@ export default function Home() {
           )}
         </div>
 
-        {/* ── Focus Pal + Music row ── */}
-        <div className="px-3 pb-3 flex gap-2">
+        {/* ── Focus Pal + Music ── */}
+        <div className="px-4 pb-3.5 flex gap-2.5">
           <button
-            onClick={() => {
-              setShowPalPicker(!showPalPicker);
-              setShowSounds(false);
-              setShowSettings(false);
-            }}
-            className="no-drag flex-1 bg-bg-card rounded-2xl px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+            onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); }}
+            className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+            style={{ background: '#2c2c2e', borderRadius: 16 }}
           >
             <span className="text-sm text-text-secondary font-medium">Focus Pal</span>
             <span className="text-lg ml-auto">{pal.icon}</span>
           </button>
 
           <button
-            onClick={() => {
-              setShowSounds(!showSounds);
-              setShowPalPicker(false);
-              setShowSettings(false);
-            }}
-            className="no-drag flex-1 bg-bg-card rounded-2xl px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+            onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); }}
+            className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+            style={{ background: '#2c2c2e', borderRadius: 16 }}
           >
             <span className="text-sm text-text-secondary font-medium">Music</span>
             <span className={`text-[11px] font-bold ml-auto px-2 py-0.5 rounded-md ${
-              activeCount > 0 ? 'bg-accent/20 text-accent-light' : 'bg-bg-active text-text-muted'
-            }`}>
+              activeCount > 0 ? 'bg-accent/20 text-accent-light' : 'text-text-muted'
+            }`} style={activeCount > 0 ? {} : { background: '#3a3a3c' }}>
               {activeCount > 0 ? 'ON' : 'OFF'}
             </span>
           </button>
@@ -223,9 +227,9 @@ export default function Home() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-3"
+              className="overflow-hidden px-4"
             >
-              <div className="bg-bg-card rounded-2xl p-4 mb-3 space-y-3">
+              <div className="p-4 mb-3 space-y-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
                 <div className="text-xs text-text-muted font-medium uppercase tracking-wider">Timer Settings</div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -235,7 +239,7 @@ export default function Home() {
                   ].map(s => (
                     <div key={s.key} className="text-center">
                       <div className="text-[10px] text-text-muted mb-1">{s.label}</div>
-                      <div className="flex items-center justify-center gap-1 bg-bg-primary rounded-lg px-2 py-1">
+                      <div className="flex items-center justify-center gap-1 px-2 py-1" style={{ background: '#1c1c1e', borderRadius: 10 }}>
                         <button onClick={() => setSettings(p => ({...p, [s.key]: Math.max(1, p[s.key] - 5)}))}
                           className="no-drag text-text-muted hover:text-text-primary text-xs w-5">{'\u2212'}</button>
                         <span className="text-sm font-medium text-text-primary w-6 text-center">{s.val}</span>
@@ -268,9 +272,9 @@ export default function Home() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-3"
+              className="overflow-hidden px-4"
             >
-              <div className="bg-bg-card rounded-2xl p-3 mb-3">
+              <div className="p-3 mb-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -288,9 +292,10 @@ export default function Home() {
                       <div key={s.id} className="flex flex-col items-center">
                         <button
                           onClick={() => audio.toggleSound(s.id)}
-                          className={`no-drag w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 transition-all text-center ${
-                            active ? 'bg-accent/15 ring-1 ring-accent/30' : 'bg-bg-primary/60 hover:bg-bg-hover'
+                          className={`no-drag w-full aspect-square flex flex-col items-center justify-center gap-0.5 transition-all text-center ${
+                            active ? 'bg-accent/15 ring-1 ring-accent/30' : 'hover:bg-bg-hover'
                           }`}
+                          style={{ borderRadius: 12, background: active ? undefined : '#1c1c1e' }}
                         >
                           <span className="text-base">{s.icon}</span>
                           <span className={`text-[9px] ${active ? 'text-accent-light' : 'text-text-muted'}`}>{s.name}</span>
@@ -314,17 +319,18 @@ export default function Home() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-3"
+              className="overflow-hidden px-4"
             >
-              <div className="bg-bg-card rounded-2xl p-3 mb-3">
+              <div className="p-3 mb-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
                 <div className="flex gap-2 justify-center">
                   {PALS.map((p, i) => (
                     <button
                       key={p.id}
                       onClick={() => { setSelectedPal(i); setShowPalPicker(false); }}
-                      className={`no-drag w-11 h-11 rounded-xl flex items-center justify-center text-xl transition-all ${
-                        i === selectedPal ? 'bg-accent/20 ring-1 ring-accent/40 scale-110' : 'bg-bg-primary/60 hover:bg-bg-hover'
+                      className={`no-drag w-11 h-11 flex items-center justify-center text-xl transition-all ${
+                        i === selectedPal ? 'bg-accent/20 ring-1 ring-accent/40 scale-110' : 'hover:bg-bg-hover'
                       }`}
+                      style={{ borderRadius: 12, background: i === selectedPal ? undefined : '#1c1c1e' }}
                     >
                       {p.icon}
                     </button>
