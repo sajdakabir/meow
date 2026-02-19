@@ -3,7 +3,7 @@ import './globals.css';
 export const metadata = {
   title: 'meow — Focus mode. Made delightful.',
   description:
-    'A cozy desktop companion that turns your Mac into a focus machine. Pomodoro timer, ambient sounds, and adorable focus pals.',
+    'A cozy menu-bar companion for your Mac with calming music and a focus pal by your side.',
 };
 
 export default function RootLayout({ children }) {
@@ -11,11 +11,11 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
