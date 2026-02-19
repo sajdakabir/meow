@@ -1,60 +1,13 @@
 {
-  "name": "zen-focus",
-  "version": "1.0.0",
-  "description": "Focus mode. Made delightful. A desktop productivity app with Pomodoro timer, ambient sounds, and focus companions.",
-  "main": "main/main.js",
-  "scripts": {
-    "dev": "concurrently \"npm run next-dev\" \"npm run electron-dev\"",
-    "next-dev": "next dev -p 3456 renderer",
-    "electron-dev": "sleep 4 && ZEN_DEV=1 ELECTRON_RUN_AS_NODE= electron .",
-    "next-build": "next build renderer",
-    "start": "ELECTRON_RUN_AS_NODE= electron .",
-    "build": "npm run next-build && electron-builder",
-    "pack": "electron-builder --dir"
-  },
-  "keywords": [
-    "focus",
-    "pomodoro",
-    "productivity",
-    "timer",
-    "ambient-sounds"
+  "name": "meow",
+  "private": true,
+  "workspaces": [
+    "apps/*"
   ],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.2.0",
-    "autoprefixer": "^10.4.24",
-    "concurrently": "^9.2.1",
-    "electron": "^33.4.11",
-    "electron-builder": "^26.8.1",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.2.0"
-  },
-  "dependencies": {
-    "framer-motion": "^12.34.2",
-    "howler": "^2.2.4",
-    "next": "^16.1.6",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
-  },
-  "build": {
-    "appId": "com.zenfocus.app",
-    "productName": "Zen Focus",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main/**/*",
-      "renderer/.next/standalone/**/*",
-      "renderer/public/**/*"
-    ],
-    "mac": {
-      "target": "dmg",
-      "icon": "renderer/public/icon.png"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "renderer/public/icon.png"
-    }
+  "scripts": {
+    "dev:desktop": "npm run dev -w apps/desktop",
+    "dev:landing": "npm run dev -w apps/landing",
+    "build:desktop": "npm run build -w apps/desktop",
+    "build:landing": "npm run build -w apps/landing"
   }
 }

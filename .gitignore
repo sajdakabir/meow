@@ -2,8 +2,8 @@
 node_modules/
 
 # Next.js build output
-renderer/.next/
-renderer/out/
+.next/
+out/
 
 # Electron build output
 dist/
@@ -29,3 +29,6 @@ npm-debug.log*
 
 # Cache
 .cache/
+
+# Plan
+plan.md
