@@ -8,6 +8,10 @@ out/
 # Electron build output
 dist/
 
+# Tauri / Rust build output
+**/src-tauri/target/
+**/src-tauri/gen/schemas/
+
 # OS files
 .DS_Store
 Thumbs.db
