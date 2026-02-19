@@ -517,9 +517,9 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="font-hand text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[1.05] text-gray-900"
             >
-              Focus mode.{' '}
+              Stay focused.{' '}
               <span className="bg-linear-to-r from-indigo-500 to-violet-500 bg-clip-text text-transparent">
-                Made delightful.
+                Stay cozy.
               </span>
             </motion.h1>
 
@@ -529,8 +529,8 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-6 text-lg sm:text-xl text-gray-500 max-w-lg mx-auto leading-relaxed"
             >
-              Transform your Mac&apos;s menu bar into a cozy focus space with
-              ambient sounds and a companion by your side.
+              A little menu-bar app that pairs ambient sounds with a pomodoro
+              timer and a furry friend — so deep work feels less lonely.
             </motion.p>
 
             <motion.div
@@ -636,7 +636,7 @@ export default function Home() {
                   Ready to focus?
                 </h2>
                 <p className="text-gray-400 max-w-md mx-auto mb-8">
-                  Download meow and turn your Mac into the coziest workspace you&apos;ve ever had.
+                  Ambient sounds, a focus timer, and an adorable companion — all tucked into your menu bar.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <a

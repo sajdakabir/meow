@@ -1,9 +1,9 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'meow — Focus mode. Made delightful.',
+  title: 'meow — Stay focused. Stay cozy.',
   description:
-    'A cozy menu-bar companion for your Mac with calming music and a focus pal by your side.',
+    'A little menu-bar app that pairs ambient sounds with a pomodoro timer and a furry friend.',
 };
 
 export default function RootLayout({ children }) {
