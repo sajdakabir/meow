@@ -1,7 +1,16 @@
 use crate::windows;
-use mouse_position::mouse_position::Mouse;
+use core_graphics::event::{CGEvent, CGEventType};
+use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
 use std::sync::atomic::Ordering;
 use tauri::{AppHandle, Manager};
+
+/// Get cursor position using CoreGraphics (top-left origin, logical points).
+fn cursor_position() -> Option<(f64, f64)> {
+    let source = CGEventSource::new(CGEventSourceStateID::HIDSystemState).ok()?;
+    let event = CGEvent::new(source).ok()?;
+    let pt = event.location();
+    Some((pt.x, pt.y))
+}
 
 /// Start the background thread that polls cursor position for:
 /// - Notch hover detection (show popover when cursor near top-center)
@@ -9,20 +18,19 @@ use tauri::{AppHandle, Manager};
 pub fn start(handle: AppHandle) {
     std::thread::spawn(move || {
         let mut tick: u64 = 0;
-        let mut error_streak: u32 = 0;
+        let mut miss_streak: u32 = 0;
         loop {
             std::thread::sleep(std::time::Duration::from_millis(50));
             tick += 1;
 
-            let (cx, cy) = match Mouse::get_mouse_position() {
-                Mouse::Position { x, y } => {
-                    error_streak = 0;
-                    (x as f64, y as f64)
+            let (cx, cy) = match cursor_position() {
+                Some(pos) => {
+                    miss_streak = 0;
+                    pos
                 }
-                Mouse::Error => {
-                    // If we keep getting errors while popover is visible, hide it
-                    error_streak += 1;
-                    if error_streak > 20
+                None => {
+                    miss_streak += 1;
+                    if miss_streak > 20
                         && windows::POPOVER_VISIBLE.load(Ordering::SeqCst)
                     {
                         let _ = windows::hide_popover(&handle, true);
@@ -55,9 +63,8 @@ pub fn start(handle: AppHandle) {
                     if let Some(win) = handle.get_webview_window("popover") {
                         match (win.outer_position(), win.inner_size()) {
                             (Ok(pos), Ok(size)) => {
-                                // mouse_position (CGEventGetLocation) returns logical
-                                // points on macOS. Tauri returns physical pixels.
-                                // Convert window coords to logical by dividing by scale.
+                                // CoreGraphics returns logical points (top-left origin).
+                                // Tauri returns physical pixels — divide by scale.
                                 let m = 30.0;
                                 let wx = pos.x as f64 / scale;
                                 let wy = pos.y as f64 / scale;

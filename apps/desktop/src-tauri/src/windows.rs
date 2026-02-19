@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
@@ -22,25 +22,45 @@ fn position_popover(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>
     Ok(())
 }
 
-/// Show the popover (optionally with focus).
+/// Show the popover with a smooth fade-in.
 pub fn show_popover(handle: &AppHandle, focus: bool) -> Result<(), Box<dyn std::error::Error>> {
     reset_outside_count();
     position_popover(handle)?;
 
     if let Some(win) = handle.get_webview_window("popover") {
+        // Start transparent, then fade in
         #[cfg(target_os = "macos")]
-        crate::platform::set_opacity(&win, 1.0);
+        crate::platform::set_opacity(&win, 0.0);
 
         win.show()?;
         if focus {
             win.set_focus()?;
         }
         POPOVER_VISIBLE.store(true, Ordering::SeqCst);
+
+        // Tell the frontend it's being shown
+        let _ = win.emit("popover-shown", ());
+
+        // Smooth fade in
+        #[cfg(target_os = "macos")]
+        {
+            let h = handle.clone();
+            std::thread::spawn(move || {
+                let steps = 8;
+                for i in 1..=steps {
+                    let opacity = i as f64 / steps as f64;
+                    if let Some(w) = h.get_webview_window("popover") {
+                        crate::platform::set_opacity(&w, opacity);
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                }
+            });
+        }
     }
     Ok(())
 }
 
-/// Hide the popover. If `immediate`, hide instantly; otherwise fade out.
+/// Hide the popover with a smooth fade-out.
 pub fn hide_popover(handle: &AppHandle, immediate: bool) -> Result<(), Box<dyn std::error::Error>> {
     reset_outside_count();
 
@@ -48,6 +68,9 @@ pub fn hide_popover(handle: &AppHandle, immediate: bool) -> Result<(), Box<dyn s
         Some(w) if w.is_visible().unwrap_or(false) => w,
         _ => return Ok(()),
     };
+
+    // Tell the frontend it's being hidden
+    let _ = win.emit("popover-hidden", ());
 
     if immediate {
         win.hide()?;
@@ -57,13 +80,14 @@ pub fn hide_popover(handle: &AppHandle, immediate: bool) -> Result<(), Box<dyn s
     } else {
         let h = handle.clone();
         std::thread::spawn(move || {
-            for i in 1..=5 {
-                let opacity = 1.0 - (i as f64 * 0.2);
+            let steps = 8;
+            for i in 1..=steps {
+                let opacity = 1.0 - (i as f64 / steps as f64);
                 if let Some(w) = h.get_webview_window("popover") {
                     #[cfg(target_os = "macos")]
                     crate::platform::set_opacity(&w, opacity.max(0.0));
                 }
-                std::thread::sleep(std::time::Duration::from_millis(16));
+                std::thread::sleep(std::time::Duration::from_millis(20));
             }
             if let Some(w) = h.get_webview_window("popover") {
                 let _ = w.hide();
@@ -79,7 +103,7 @@ pub fn hide_popover(handle: &AppHandle, immediate: bool) -> Result<(), Box<dyn s
 /// Toggle popover visibility.
 pub fn toggle_popover(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     if POPOVER_VISIBLE.load(Ordering::SeqCst) {
-        hide_popover(handle, true)
+        hide_popover(handle, false)
     } else {
         show_popover(handle, true)
     }

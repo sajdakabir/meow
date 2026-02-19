@@ -115,12 +115,15 @@ export default function Home() {
     <div className="px-2 pb-2 pt-1" ref={containerRef}>
       <motion.div
         className="overflow-hidden flex flex-col"
+        initial={{ opacity: 0, scale: 0.96, y: -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
         style={{
           background: '#1c1c1e',
           borderRadius: expanded ? 22 : 14,
         }}
         layout
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        layoutTransition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
         <AnimatePresence mode="wait">
           {!expanded ? (
