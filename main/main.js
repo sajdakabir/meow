@@ -9,6 +9,9 @@ const OUT_DIR = path.join(__dirname, '..', 'renderer', 'out');
 let popoverWindow = null;
 let tray = null;
 let isQuitting = false;
+let hideTimeout = null;
+let mouseCheckInterval = null;
+let notchDetectionInterval = null;
 
 // ── Mime types ──
 function getMimeType(filePath) {
@@ -50,49 +53,125 @@ function setupProtocol() {
   });
 }
 
-// ── Position window below the tray icon (menubar popover style) ──
+// ── Position popover at top center of screen (below menu bar / notch) ──
 function getPopoverPosition() {
-  const trayBounds = tray.getBounds();
+  const display = screen.getPrimaryDisplay();
   const windowBounds = popoverWindow.getBounds();
-  const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
 
-  let x = Math.round(trayBounds.x + trayBounds.width / 2 - windowBounds.width / 2);
-  let y = Math.round(trayBounds.y + trayBounds.height + 4);
-
-  // Keep within screen bounds
-  const maxX = display.workArea.x + display.workArea.width - windowBounds.width;
-  const maxY = display.workArea.y + display.workArea.height - windowBounds.height;
-  x = Math.max(display.workArea.x, Math.min(x, maxX));
-  y = Math.min(y, maxY);
+  const x = Math.round(display.workArea.x + display.workArea.width / 2 - windowBounds.width / 2);
+  const y = display.workArea.y + 4;
 
   return { x, y };
 }
 
-function showPopover() {
-  if (!popoverWindow) return;
+function showPopover(focusWindow = true) {
+  if (!popoverWindow || popoverWindow.isDestroyed()) return;
+  cancelHide();
+
   const { x, y } = getPopoverPosition();
   popoverWindow.setPosition(x, y, false);
-  popoverWindow.show();
-  popoverWindow.focus();
+
+  if (focusWindow) {
+    popoverWindow.show();
+    popoverWindow.focus();
+  } else {
+    popoverWindow.showInactive();
+  }
+
+  startMouseCheck();
 }
 
 function hidePopover() {
-  if (popoverWindow) popoverWindow.hide();
+  cancelHide();
+  stopMouseCheck();
+  if (popoverWindow && !popoverWindow.isDestroyed()) popoverWindow.hide();
+}
+
+function cancelHide() {
+  if (hideTimeout) {
+    clearTimeout(hideTimeout);
+    hideTimeout = null;
+  }
 }
 
 function togglePopover() {
   if (popoverWindow && popoverWindow.isVisible()) {
     hidePopover();
   } else {
-    showPopover();
+    showPopover(true);
   }
+}
+
+// ── Mouse tracking: auto-hide when cursor leaves popover area ──
+function startMouseCheck() {
+  stopMouseCheck();
+  mouseCheckInterval = setInterval(() => {
+    if (!popoverWindow || !popoverWindow.isVisible() || popoverWindow.isDestroyed()) {
+      stopMouseCheck();
+      return;
+    }
+
+    // Don't auto-hide if the window is focused (user is interacting)
+    if (popoverWindow.isFocused()) return;
+
+    const point = screen.getCursorScreenPoint();
+    const bounds = popoverWindow.getBounds();
+    const margin = 40;
+
+    const inPopover = (
+      point.x >= bounds.x - margin &&
+      point.x <= bounds.x + bounds.width + margin &&
+      point.y >= bounds.y - margin &&
+      point.y <= bounds.y + bounds.height + margin
+    );
+
+    // Also keep alive if cursor is in the notch trigger zone
+    const display = screen.getPrimaryDisplay();
+    const centerX = display.bounds.x + display.bounds.width / 2;
+    const inTriggerZone = (
+      point.y < display.workArea.y &&
+      Math.abs(point.x - centerX) < 200
+    );
+
+    if (!inPopover && !inTriggerZone) {
+      hidePopover();
+    }
+  }, 300);
+}
+
+function stopMouseCheck() {
+  if (mouseCheckInterval) {
+    clearInterval(mouseCheckInterval);
+    mouseCheckInterval = null;
+  }
+}
+
+// ── Notch hover detection: show popover when cursor pushes to top-center ──
+function startNotchDetection() {
+  notchDetectionInterval = setInterval(() => {
+    if (popoverWindow && popoverWindow.isVisible()) return;
+
+    const point = screen.getCursorScreenPoint();
+    const display = screen.getPrimaryDisplay();
+    const centerX = display.bounds.x + display.bounds.width / 2;
+
+    // Trigger when cursor is pushed to the very top of the screen, near center
+    const inNotchArea = (
+      point.y <= display.bounds.y + 5 &&
+      Math.abs(point.x - centerX) < 120
+    );
+
+    if (inNotchArea) {
+      showPopover(false);
+    }
+  }, 200);
 }
 
 // ── Create the popover window ──
 function createPopoverWindow() {
   popoverWindow = new BrowserWindow({
-    width: 360,
-    height: 420,
+    width: 340,
+    height: 148,
     show: false,
     frame: false,
     transparent: true,
@@ -116,14 +195,24 @@ function createPopoverWindow() {
     popoverWindow.loadURL('app://bundle/index.html');
   }
 
-  // Hide when focus is lost (like a real popover)
+  // Hide when window loses focus (user clicked elsewhere)
   popoverWindow.on('blur', () => {
-    // Small delay to allow clicking tray icon to toggle
     setTimeout(() => {
       if (popoverWindow && !popoverWindow.isDestroyed() && !popoverWindow.isFocused()) {
-        hidePopover();
+        const point = screen.getCursorScreenPoint();
+        const bounds = popoverWindow.getBounds();
+        const margin = 20;
+        const inBounds = (
+          point.x >= bounds.x - margin &&
+          point.x <= bounds.x + bounds.width + margin &&
+          point.y >= bounds.y - margin &&
+          point.y <= bounds.y + bounds.height + margin
+        );
+        if (!inBounds) {
+          hidePopover();
+        }
       }
-    }, 150);
+    }, 200);
   });
 
   popoverWindow.on('close', (e) => {
@@ -157,23 +246,30 @@ function createTray() {
     togglePopover();
   });
 
+  // Hover to show (macOS)
+  if (process.platform === 'darwin') {
+    tray.on('mouse-enter', () => {
+      if (!popoverWindow || !popoverWindow.isVisible()) {
+        showPopover(false);
+      }
+    });
+  }
+
   // Right click shows context menu
   tray.on('right-click', () => {
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: 'Start Timer (25 min)',
-        accelerator: 'CommandOrControl+T',
+        label: 'Start Focus',
         click: () => {
-          showPopover();
+          showPopover(true);
           popoverWindow.webContents.send('tray-start-focus');
         },
       },
       { type: 'separator' },
       {
         label: 'Settings...',
-        accelerator: 'CommandOrControl+,',
         click: () => {
-          showPopover();
+          showPopover(true);
           popoverWindow.webContents.send('open-settings');
         },
       },
@@ -193,9 +289,8 @@ function createTray() {
 
 // ── Global shortcuts ──
 function registerShortcuts() {
-  globalShortcut.register('CommandOrControl+T', () => {
-    showPopover();
-    popoverWindow.webContents.send('tray-start-focus');
+  globalShortcut.register('CommandOrControl+Shift+F', () => {
+    togglePopover();
   });
 }
 
@@ -213,25 +308,32 @@ ipcMain.on('window-close', () => {
 });
 
 ipcMain.on('resize-window', (_, { height }) => {
-  if (popoverWindow) {
+  if (popoverWindow && !popoverWindow.isDestroyed()) {
     const bounds = popoverWindow.getBounds();
-    popoverWindow.setBounds({ x: bounds.x, y: bounds.y, width: bounds.width, height });
+    const clampedHeight = Math.max(100, Math.min(height, 600));
+    popoverWindow.setBounds({
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: clampedHeight,
+    });
   }
 });
 
 // ── App lifecycle ──
-app.dock && app.dock.hide(); // Hide from dock — menubar-only app
+app.dock && app.dock.hide();
 
 app.whenReady().then(() => {
   setupProtocol();
   createTray();
   createPopoverWindow();
   registerShortcuts();
+  startNotchDetection();
 
   // Show on first launch
-  setTimeout(() => showPopover(), 500);
+  setTimeout(() => showPopover(true), 500);
 
-  app.on('activate', () => showPopover());
+  app.on('activate', () => showPopover(true));
 });
 
 app.on('window-all-closed', () => {
@@ -240,5 +342,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   isQuitting = true;
+  if (notchDetectionInterval) clearInterval(notchDetectionInterval);
+  stopMouseCheck();
   globalShortcut.unregisterAll();
 });

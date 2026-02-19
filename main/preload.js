@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Window controls
   minimize: () => ipcRenderer.send('window-minimize'),
   close: () => ipcRenderer.send('window-close'),
+  resizeWindow: (height) => ipcRenderer.send('resize-window', { height }),
 
   // Notifications
   showNotification: (title, body) => ipcRenderer.send('show-notification', { title, body }),
