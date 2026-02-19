@@ -475,8 +475,9 @@ export default function Home() {
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-[#fafafa]/80 backdrop-blur-xl border-b border-gray-100/80">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="#" className="text-lg font-bold tracking-tight text-gray-900">
-            meow
+          <a href="#" className="flex items-center gap-2">
+            <img src="/image.png" alt="meow" className="h-7 w-7 rounded-lg" />
+            <span className="text-lg font-bold tracking-tight text-gray-900">meow</span>
           </a>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">Features</a>
@@ -550,7 +551,9 @@ export default function Home() {
                 Download for Mac
               </a>
               <a
-                href="#"
+                href="https://github.com/sajdakabir/meow"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 text-gray-600 font-medium px-7 py-3.5 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-white transition-all text-sm"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform">
@@ -648,7 +651,9 @@ export default function Home() {
                     Download for Mac
                   </a>
                   <a
-                    href="#"
+                    href="https://github.com/sajdakabir/meow"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-gray-300 font-medium px-7 py-3.5 rounded-full border border-white/20 hover:border-white/40 hover:text-white transition-all text-sm"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -686,6 +691,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto px-6 py-12">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
+              <img src="/image.png" alt="meow" className="h-6 w-6 rounded-md" />
               <span className="text-lg font-bold tracking-tight text-gray-900">meow</span>
               <span className="text-gray-300">&middot;</span>
               <span className="text-sm text-gray-400">Focus mode for your Mac</span>
