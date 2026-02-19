@@ -1,8 +1,15 @@
-# Zen Focus
+# meow
 
 **Focus mode. Made delightful.**
 
 A desktop productivity app with a Pomodoro timer, ambient sounds, and cute animal companions to keep you company while you work.
+
+## Apps
+
+| App | Description |
+|-----|-------------|
+| `apps/desktop` | Electron + Next.js desktop app |
+| `apps/landing` | Next.js marketing/landing page |
 
 ## Features
 
@@ -18,8 +25,8 @@ A desktop productivity app with a Pomodoro timer, ambient sounds, and cute anima
 ## Tech Stack
 
 - **Electron** — Desktop shell
-- **Next.js** — UI framework (static export)
-- **Tailwind CSS** — Styling
+- **Next.js** — UI framework (static export for desktop, app router for landing)
+- **Tailwind CSS v4** — Styling
 - **Framer Motion** — Animations
 - **Howler.js** — Audio playback
 
@@ -38,57 +45,72 @@ npm install
 
 ### Development
 
-Run with hot reload (Next.js dev server + Electron):
+Run the desktop app with hot reload:
 
 ```bash
-npm run dev
+npm run dev:desktop
+```
+
+Run the landing page:
+
+```bash
+npm run dev:landing
 ```
 
 ### Production
 
-Build the static site and launch Electron:
+Build the desktop app:
 
 ```bash
-npm run next-build
-npm run start
+npm run build:desktop
 ```
 
-### Package for Distribution
+Build the landing page:
 
 ```bash
-npm run build
+npm run build:landing
 ```
 
-This creates a distributable `.dmg` (macOS) or `.exe` (Windows) in the `dist/` folder.
+The desktop build produces a distributable `.dmg` (macOS) or `.exe` (Windows) in `apps/desktop/dist/`.
 
 ## Project Structure
 
 ```
-zen-focus/
-├── main/                      # Electron main process
-│   ├── main.js                # Window, tray, IPC, custom protocol
-│   └── preload.js             # Context bridge for renderer
-├── renderer/                  # Next.js app (UI)
-│   ├── app/
-│   │   ├── layout.js          # Root layout
-│   │   ├── page.js            # Main app page
-│   │   └── globals.css        # Tailwind + custom animations
-│   ├── components/
-│   │   ├── Timer.jsx          # Circular progress timer
-│   │   ├── Controls.jsx       # Play/Pause/Reset/Skip buttons
-│   │   ├── AmbientSounds.jsx  # Sound mixer panel
-│   │   ├── FocusPal.jsx       # Animated animal companions
-│   │   ├── Settings.jsx       # Settings panel
-│   │   └── TitleBar.jsx       # Custom window title bar
-│   ├── hooks/
-│   │   ├── useTimer.js        # Pomodoro timer logic
-│   │   └── useAudio.js        # Audio playback management
-│   └── public/
-│       ├── sounds/            # Ambient sound files (.wav)
-│       └── tray-icon.png      # Menu bar icon
+meow/
+├── apps/
+│   ├── desktop/                   # Electron + Next.js desktop app
+│   │   ├── main/
+│   │   │   ├── main.js            # Window, tray, IPC, custom protocol
+│   │   │   └── preload.js         # Context bridge for renderer
+│   │   ├── renderer/              # Next.js app (UI)
+│   │   │   ├── app/
+│   │   │   │   ├── layout.js      # Root layout
+│   │   │   │   ├── page.js        # Main app page
+│   │   │   │   └── globals.css    # Tailwind + custom animations
+│   │   │   ├── components/
+│   │   │   │   ├── Timer.jsx      # Circular progress timer
+│   │   │   │   ├── Controls.jsx   # Play/Pause/Reset/Skip buttons
+│   │   │   │   ├── AmbientSounds.jsx  # Sound mixer panel
+│   │   │   │   ├── FocusPal.jsx   # Animated animal companions
+│   │   │   │   ├── Settings.jsx   # Settings panel
+│   │   │   │   └── TitleBar.jsx   # Custom window title bar
+│   │   │   ├── hooks/
+│   │   │   │   ├── useTimer.js    # Pomodoro timer logic
+│   │   │   │   └── useAudio.js    # Audio playback management
+│   │   │   └── public/
+│   │   │       ├── sounds/        # Ambient sound files (.wav)
+│   │   │       └── tray-icon.png  # Menu bar icon
+│   │   └── package.json
+│   └── landing/                   # Next.js marketing site
+│       ├── app/
+│       │   ├── layout.js
+│       │   ├── page.js
+│       │   └── globals.css
+│       ├── public/
+│       └── package.json
 ├── scripts/
-│   └── generate-sounds.js     # Script to regenerate sound files
-└── package.json
+│   └── generate-sounds.js         # Script to regenerate sound files
+└── package.json                   # Root workspace config
 ```
 
 ## Keyboard Shortcuts

@@ -131,13 +131,9 @@ export function useTimer(settings = {}) {
 
   // Update tray title when timer is running
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      if (isRunning) {
-        window.electronAPI.updateTrayTitle(display);
-      } else {
-        window.electronAPI.updateTrayTitle('');
-      }
-    }
+    import('../lib/tauri-bridge').then(({ tauriBridge }) => {
+      tauriBridge.updateTrayTitle(isRunning ? display : '');
+    });
   }, [display, isRunning]);
 
   return {

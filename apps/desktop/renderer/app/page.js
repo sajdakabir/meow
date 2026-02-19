@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
+import { tauriBridge } from '../lib/tauri-bridge';
 
 // ── Focus Pals ──
 const PALS = [
@@ -46,15 +47,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!containerRef.current || typeof window === 'undefined') return;
-    const api = window.electronAPI;
-    if (!api?.resizeWindow) return;
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const height = Math.ceil(
           entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
         ) + 16;
-        api.resizeWindow(height);
+        tauriBridge.resizeWindow(height);
       }
     });
 
@@ -63,15 +62,13 @@ export default function Home() {
   }, []);
 
   const handleTimerComplete = useCallback((mode, sessions) => {
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      if (mode === 'work') {
-        window.electronAPI.showNotification(
-          'Focus complete!',
-          `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`
-        );
-      } else {
-        window.electronAPI.showNotification('Break over!', 'Ready to focus again?');
-      }
+    if (mode === 'work') {
+      tauriBridge.showNotification(
+        'Focus complete!',
+        `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`
+      );
+    } else {
+      tauriBridge.showNotification('Break over!', 'Ready to focus again?');
     }
   }, []);
 
@@ -83,20 +80,23 @@ export default function Home() {
   const isBreak = timer.mode !== 'work';
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.electronAPI) return;
-    window.electronAPI.onStartFocus(() => timer.start());
-    window.electronAPI.onPause(() => timer.pause());
-    window.electronAPI.onReset(() => timer.reset());
-    window.electronAPI.onOpenSettings(() => {
-      setShowSettings(true);
-      setShowSounds(false);
-      setShowPalPicker(false);
-    });
+    if (typeof window === 'undefined') return;
+    const unlisteners = [];
+
+    const setup = async () => {
+      unlisteners.push(await tauriBridge.onStartFocus(() => timer.start()));
+      unlisteners.push(await tauriBridge.onPause(() => timer.pause()));
+      unlisteners.push(await tauriBridge.onReset(() => timer.reset()));
+      unlisteners.push(await tauriBridge.onOpenSettings(() => {
+        setShowSettings(true);
+        setShowSounds(false);
+        setShowPalPicker(false);
+      }));
+    };
+    setup();
+
     return () => {
-      window.electronAPI.removeAllListeners('tray-start-focus');
-      window.electronAPI.removeAllListeners('tray-pause');
-      window.electronAPI.removeAllListeners('tray-reset');
-      window.electronAPI.removeAllListeners('open-settings');
+      unlisteners.forEach((fn) => fn && fn());
     };
   }, [timer.start, timer.pause, timer.reset]);
 
