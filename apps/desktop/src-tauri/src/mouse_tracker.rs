@@ -42,12 +42,24 @@ pub fn start(handle: AppHandle) {
                     if let Some(win) = handle.get_webview_window("popover") {
                         match (win.outer_position(), win.inner_size()) {
                             (Ok(pos), Ok(size)) => {
+                                // Try both logical (/ scale) and raw physical coords
+                                // since mouse_position crate may return either
+                                let m = 20.0;
                                 let wx = pos.x as f64 / scale;
                                 let wy = pos.y as f64 / scale;
                                 let ww = size.width as f64 / scale;
                                 let wh = size.height as f64 / scale;
-                                let m = 15.0; // grace margin
-                                cx >= wx - m && cx <= wx + ww + m && cy >= wy - m && cy <= wy + wh + m
+                                let logical = cx >= wx - m && cx <= wx + ww + m
+                                    && cy >= wy - m && cy <= wy + wh + m;
+
+                                let wx2 = pos.x as f64;
+                                let wy2 = pos.y as f64;
+                                let ww2 = size.width as f64;
+                                let wh2 = size.height as f64;
+                                let physical = cx >= wx2 - m && cx <= wx2 + ww2 + m
+                                    && cy >= wy2 - m && cy <= wy2 + wh2 + m;
+
+                                logical || physical
                             }
                             _ => false,
                         }

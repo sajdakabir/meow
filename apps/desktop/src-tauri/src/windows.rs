@@ -6,22 +6,8 @@ pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
 const OUTSIDE_THRESHOLD: u32 = 2;
 
-/// Position the companion at bottom-center and set it click-through.
-pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let monitor = app.primary_monitor()?.ok_or("no primary monitor")?;
-    let scale = monitor.scale_factor();
-    let sw = monitor.size().width as f64 / scale;
-    let sh = monitor.size().height as f64 / scale;
-
-    // Companion window disabled until companion page is created
-    // if let Some(companion) = app.get_webview_window("companion") {
-    //     let cw = 160.0;
-    //     let ch = 100.0;
-    //     companion.set_position(tauri::LogicalPosition::new(sw / 2.0 - cw / 2.0, sh - ch))?;
-    //     companion.set_ignore_cursor_events(true)?;
-    //     companion.show()?;
-    // }
-
+/// Initial window setup.
+pub fn setup_windows(_app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
