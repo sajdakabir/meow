@@ -1,8 +1,7 @@
-use std::sync::atomic::Ordering;
 use tauri::{
     image::Image,
     menu::{MenuBuilder, MenuItemBuilder},
-    tray::{TrayIconBuilder, TrayIconEvent},
+    tray::TrayIconBuilder,
     Emitter, Manager,
 };
 
@@ -38,17 +37,6 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .tooltip("meow")
         .menu(&menu)
         .show_menu_on_left_click(true)
-        .on_tray_icon_event(|tray, event| {
-            let app = tray.app_handle();
-            match event {
-                TrayIconEvent::Enter { .. } => {
-                    if !crate::windows::POPOVER_VISIBLE.load(Ordering::SeqCst) {
-                        let _ = crate::windows::show_popover(app, false);
-                    }
-                }
-                _ => {}
-            }
-        })
         .on_menu_event(|app, event| match event.id().as_ref() {
             "start_focus" => {
                 let _ = crate::windows::show_popover(app, true);

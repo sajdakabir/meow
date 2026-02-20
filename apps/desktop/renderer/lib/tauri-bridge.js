@@ -63,4 +63,12 @@ export const tauriBridge = {
     if (t) return t.event.listen('open-settings', () => cb());
     return () => {};
   },
+
+  on: async (event, cb) => {
+    const t = getTauri();
+    if (t) return t.event.listen(event, () => cb());
+    return () => {};
+  },
+
+  getTauri,
 };

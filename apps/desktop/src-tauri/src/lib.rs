@@ -31,15 +31,8 @@ pub fn run() {
             // Register global shortcuts
             commands::register_shortcuts(app)?;
 
-            // Start mouse tracking (notch hover + auto-hide)
+            // Start mouse tracking (auto-collapse when cursor leaves expanded popover)
             mouse_tracker::start(app.handle().clone());
-
-            // Show popover on first launch after a short delay
-            let handle = app.handle().clone();
-            std::thread::spawn(move || {
-                std::thread::sleep(std::time::Duration::from_millis(800));
-                let _ = windows::show_popover(&handle, true);
-            });
 
             Ok(())
         })

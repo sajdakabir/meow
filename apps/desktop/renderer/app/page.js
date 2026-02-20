@@ -94,6 +94,14 @@ export default function Home() {
         setShowSounds(false);
         setShowPalPicker(false);
       }));
+      // Rust → JS: expand or collapse the popover
+      unlisteners.push(await tauriBridge.on('popover-expand', () => setExpanded(true)));
+      unlisteners.push(await tauriBridge.on('popover-collapse', () => {
+        setExpanded(false);
+        setShowSettings(false);
+        setShowSounds(false);
+        setShowPalPicker(false);
+      }));
     };
     setup();
 
@@ -112,65 +120,70 @@ export default function Home() {
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div className="px-2 pb-2 pt-1" ref={containerRef}>
+    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
-        initial={{ opacity: 0, scale: 0.96, y: -4 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
         style={{
-          background: '#1c1c1e',
-          borderRadius: expanded ? 22 : 14,
+          background: expanded ? '#1c1c1e' : '#000000',
+          borderRadius: expanded ? 22 : '0 0 12px 12px',
         }}
         layout
-        layoutTransition={{ type: 'spring', stiffness: 400, damping: 30 }}
+        layoutTransition={{ type: 'spring', stiffness: 380, damping: 32 }}
       >
         <AnimatePresence mode="wait">
           {!expanded ? (
-            /* ── Collapsed pill ── */
+            /* ── Notch wings ── cat on left | notch gap | timer + controls on right */
             <motion.div
               key="collapsed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="no-drag flex items-center px-3 py-2 gap-2"
+              transition={{ duration: 0.12 }}
+              className="no-drag flex items-center justify-between"
+              style={{ height: 36, paddingLeft: 14, paddingRight: 10 }}
             >
-              <div
-                className="flex items-center gap-2.5 flex-1 cursor-pointer px-1.5"
+              {/* Left wing — cat icon, click to expand */}
+              <button
                 onClick={() => setExpanded(true)}
+                className="flex items-center justify-center text-[17px] opacity-90 hover:opacity-100 transition-opacity"
+                style={{ width: 28, height: 28 }}
               >
-                <span className="text-lg">{pal.icon}</span>
-                <span className="text-[13px] text-text-primary font-semibold tabular-nums">
+                {pal.icon}
+              </button>
+
+              {/* Right wing — timer + controls */}
+              <div className="flex items-center gap-1">
+                <span className="text-[13px] font-semibold tabular-nums text-white/90 mr-1">
                   {timerDisplay}
                 </span>
-              </div>
-              <div className="flex items-center gap-1">
                 {timer.isRunning ? (
                   <>
                     <button
                       onClick={timer.pause}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
                       </svg>
                     </button>
                     <button
                       onClick={timer.reset}
-                      className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="5" y="5" width="14" height="14" rx="2"/>
                       </svg>
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={timer.start}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5.14v14l11-7-11-7z"/>
                     </svg>
                   </button>

@@ -21,14 +21,14 @@
         "url": "index.html",
         "title": "Zen Focus",
         "width": 350,
-        "height": 160,
+        "height": 50,
         "decorations": false,
         "transparent": true,
         "resizable": false,
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "shadow": false,
-        "visible": false,
+        "visible": true,
         "focus": false
       }
     ]
