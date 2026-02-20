@@ -133,7 +133,7 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{
           opacity: 1,
-          borderRadius: expanded ? 22 : 0,
+          borderRadius: expanded ? '22px' : '0px 0px 10px 10px',
         }}
         transition={{
           opacity: { duration: 0.15 },
