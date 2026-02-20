@@ -3,10 +3,8 @@ use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut}
 use tauri_plugin_notification::NotificationExt;
 
 /// Resize the popover window height (clamped 45-600).
-/// Also resets the outside-count so a resize doesn't trigger auto-collapse.
 #[tauri::command]
 pub async fn resize_window(app: AppHandle, height: f64) -> Result<(), String> {
-    crate::windows::reset_outside_count();
     if let Some(win) = app.get_webview_window("popover") {
         let clamped = height.max(45.0).min(600.0);
         let scale = win.scale_factor().map_err(|e| e.to_string())?;

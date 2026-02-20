@@ -59,7 +59,7 @@ pub fn start(handle: AppHandle) {
                 let in_popover = if let Some(win) = handle.get_webview_window("popover") {
                     match (win.outer_position(), win.inner_size()) {
                         (Ok(pos), Ok(size)) => {
-                            let m = 30.0;
+                            let m = 8.0;
                             let wx = pos.x as f64 / scale;
                             let wy = pos.y as f64 / scale;
                             let ww = size.width as f64 / scale;

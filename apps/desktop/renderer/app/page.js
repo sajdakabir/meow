@@ -30,6 +30,7 @@ export default function Home() {
   });
   const containerRef = useRef(null);
   const isCollapsingRef = useRef(false);
+  const lastHeightRef = useRef(0);
 
   useEffect(() => {
     try {
@@ -56,8 +57,12 @@ export default function Home() {
       for (const entry of entries) {
         const height = Math.ceil(
           entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
-        ) + 16;
-        tauriBridge.resizeWindow(height);
+        ) + 4;
+        // Only call resize if height actually changed (prevents feedback loop)
+        if (Math.abs(height - lastHeightRef.current) > 1) {
+          lastHeightRef.current = height;
+          tauriBridge.resizeWindow(height);
+        }
       }
     });
 
