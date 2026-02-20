@@ -29,6 +29,7 @@ export default function Home() {
     autoStartWork: false,
   });
   const containerRef = useRef(null);
+  const isCollapsingRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -51,6 +52,7 @@ export default function Home() {
     if (!containerRef.current || typeof window === 'undefined') return;
 
     const observer = new ResizeObserver((entries) => {
+      if (isCollapsingRef.current) return;
       for (const entry of entries) {
         const height = Math.ceil(
           entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
@@ -96,13 +98,18 @@ export default function Home() {
         setShowPalPicker(false);
       }));
       // Rust → JS: expand or collapse the popover
-      unlisteners.push(await tauriBridge.on('popover-expand', () => setExpanded(true)));
+      unlisteners.push(await tauriBridge.on('popover-expand', () => {
+        isCollapsingRef.current = false;
+        setExpanded(true);
+      }));
       unlisteners.push(await tauriBridge.on('popover-collapse', () => {
+        isCollapsingRef.current = true;
         setExpanded(false);
         setShowSettings(false);
         setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
+        setTimeout(() => { isCollapsingRef.current = false; }, 300);
       }));
     };
     setup();
@@ -115,18 +122,21 @@ export default function Home() {
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0' }}>
+    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.15 }}
-        style={{
-          background: '#000000',
+        animate={{
+          opacity: 1,
           borderRadius: expanded ? 22 : 0,
         }}
+        transition={{
+          opacity: { duration: 0.15 },
+          borderRadius: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+          layout: { type: 'spring', stiffness: 400, damping: 30 }
+        }}
+        style={{ background: '#000000' }}
         layout
-        layoutTransition={{ type: 'spring', stiffness: 380, damping: 32 }}
       >
         <AnimatePresence mode="wait">
           {!expanded ? (
@@ -136,7 +146,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
+              transition={{ duration: 0.1 }}
               className="no-drag flex items-center justify-between"
               style={{ height: 32, paddingLeft: 10, paddingRight: 8 }}
             >
@@ -164,7 +174,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
               {/* Settings gear */}
               <div className="flex items-center justify-end px-4 pt-2.5">

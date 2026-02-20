@@ -57,6 +57,7 @@ pub fn show_popover(handle: &AppHandle, focus: bool) -> Result<(), Box<dyn std::
 }
 
 /// Collapse back to the notch pill. Emits "popover-collapse" to the frontend.
+/// The native window resize is delayed to let the frontend animation play.
 pub fn hide_popover(handle: &AppHandle, _immediate: bool) -> Result<(), Box<dyn std::error::Error>> {
     reset_outside_count();
 
@@ -68,9 +69,18 @@ pub fn hide_popover(handle: &AppHandle, _immediate: bool) -> Result<(), Box<dyn 
         let _ = win.emit("popover-collapse", ());
         POPOVER_VISIBLE.store(false, Ordering::SeqCst);
 
-        // Shrink back to notch width and re-center
-        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 37.0));
-        let _ = center_popover(handle, COLLAPSED_WIDTH);
+        // Delay window resize to allow frontend collapse animation to complete
+        let h = handle.clone();
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(200));
+            // Only shrink if still collapsed (user might have re-expanded)
+            if !POPOVER_VISIBLE.load(Ordering::SeqCst) {
+                if let Some(w) = h.get_webview_window("popover") {
+                    let _ = w.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 37.0));
+                }
+                let _ = center_popover(&h, COLLAPSED_WIDTH);
+            }
+        });
     }
     Ok(())
 }
