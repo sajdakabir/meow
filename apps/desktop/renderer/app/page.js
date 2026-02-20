@@ -19,6 +19,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
+  const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [selectedPal, setSelectedPal] = useState(0);
   const [settings, setSettings] = useState({
     workMinutes: 25,
@@ -28,6 +29,7 @@ export default function Home() {
     autoStartWork: false,
   });
   const containerRef = useRef(null);
+  const isCollapsingRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -50,6 +52,7 @@ export default function Home() {
     if (!containerRef.current || typeof window === 'undefined') return;
 
     const observer = new ResizeObserver((entries) => {
+      if (isCollapsingRef.current) return;
       for (const entry of entries) {
         const height = Math.ceil(
           entry.borderBoxSize?.[0]?.blockSize || entry.contentRect.height
@@ -94,6 +97,20 @@ export default function Home() {
         setShowSounds(false);
         setShowPalPicker(false);
       }));
+      // Rust → JS: expand or collapse the popover
+      unlisteners.push(await tauriBridge.on('popover-expand', () => {
+        isCollapsingRef.current = false;
+        setExpanded(true);
+      }));
+      unlisteners.push(await tauriBridge.on('popover-collapse', () => {
+        isCollapsingRef.current = true;
+        setExpanded(false);
+        setShowSettings(false);
+        setShowSounds(false);
+        setShowPalPicker(false);
+        setShowTimerPicker(false);
+        setTimeout(() => { isCollapsingRef.current = false; }, 300);
+      }));
     };
     setup();
 
@@ -102,55 +119,53 @@ export default function Home() {
     };
   }, [timer.start, timer.pause, timer.reset]);
 
-  const collapse = () => {
-    setExpanded(false);
-    setShowSettings(false);
-    setShowSounds(false);
-    setShowPalPicker(false);
-  };
-
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div className="px-2 pb-2 pt-1" ref={containerRef}>
+    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
-        style={{
-          background: '#1c1c1e',
-          borderRadius: expanded ? 22 : 14,
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: 1,
+          borderRadius: expanded ? 22 : 0,
         }}
+        transition={{
+          opacity: { duration: 0.15 },
+          borderRadius: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+          layout: { type: 'spring', stiffness: 400, damping: 30 }
+        }}
+        style={{ background: '#000000' }}
         layout
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
         <AnimatePresence mode="wait">
           {!expanded ? (
-            /* ── Collapsed pill ── */
+            /* ── Notch wings ── cat on left | notch gap | timer + controls on right */
             <motion.div
               key="collapsed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              onClick={() => setExpanded(true)}
-              className="no-drag flex items-center justify-between px-5 py-2.5 cursor-pointer"
+              transition={{ duration: 0.1 }}
+              className="no-drag flex items-center justify-between"
+              style={{ height: 32, paddingLeft: 10, paddingRight: 8 }}
             >
-              <div className="flex items-center gap-2.5">
-                <span className="text-lg">{pal.icon}</span>
-                <span className="text-[13px] text-text-secondary font-medium">
-                  {timer.isRunning
-                    ? timer.mode === 'work' ? 'Focusing' : 'Break'
-                    : 'meow'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                {timer.isRunning && (
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }} />
-                )}
-                <span className="text-[13px] text-text-primary font-semibold tabular-nums">
-                  {timerDisplay}
-                </span>
-              </div>
+              {/* Left wing — cat icon */}
+              <button
+                onClick={() => setExpanded(true)}
+                className="flex items-center justify-center text-[15px] opacity-90 hover:opacity-100 transition-opacity"
+                style={{ width: 26, height: 26 }}
+              >
+                {pal.icon}
+              </button>
+
+              {/* Notch gap — transparent spacer for the physical notch */}
+              <div style={{ width: 170, flexShrink: 0 }} />
+
+              {/* Right wing — timer only */}
+              <span className="text-[12px] font-semibold tabular-nums text-white/90">
+                {timerDisplay}
+              </span>
             </motion.div>
           ) : (
             /* ── Expanded card ── */
@@ -159,20 +174,12 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              {/* Collapse chevron + Settings gear */}
-              <div className="flex items-center justify-between px-4 pt-2.5">
+              {/* Settings gear */}
+              <div className="flex items-center justify-end px-4 pt-2.5">
                 <button
-                  onClick={collapse}
-                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="18 15 12 9 6 15"/>
-                  </svg>
-                </button>
-                <button
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); }}
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -191,12 +198,13 @@ export default function Home() {
                   <button
                     onClick={() => {
                       if (!timer.isRunning) {
-                        const modes = ['work', 'shortBreak', 'longBreak'];
-                        const idx = modes.indexOf(timer.mode);
-                        timer.setMode(modes[(idx + 1) % modes.length]);
+                        setShowTimerPicker(!showTimerPicker);
+                        setShowSettings(false);
+                        setShowSounds(false);
+                        setShowPalPicker(false);
                       }
                     }}
-                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-[64px] text-center hover:bg-bg-active transition-colors"
+                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-16 text-center hover:bg-bg-active transition-colors"
                     style={{ background: '#3a3a3c', borderRadius: 12 }}
                   >
                     {Math.ceil(timer.timeLeft / 60)} min
@@ -218,40 +226,43 @@ export default function Home() {
                     )}
                   </div>
 
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={timer.toggle}
-                    className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                  >
-                    {timer.isRunning ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary ml-0.5">
-                        <path d="M8 5.14v14l11-7-11-7z"/>
-                      </svg>
+                  <div className="flex items-center gap-1.5">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={timer.toggle}
+                      className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.08)' }}
+                    >
+                      {timer.isRunning ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
+                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary ml-0.5">
+                          <path d="M8 5.14v14l11-7-11-7z"/>
+                        </svg>
+                      )}
+                    </motion.button>
+                    {timer.isRunning && (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={timer.reset}
+                        className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.08)' }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
+                          <rect x="5" y="5" width="14" height="14" rx="2"/>
+                        </svg>
+                      </motion.button>
                     )}
-                  </motion.button>
-                </div>
-
-                {timer.isRunning && (
-                  <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: '#2c2c2e' }}>
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }}
-                      animate={{ width: `${timer.progress * 100}%` }}
-                      transition={{ duration: 0.5 }}
-                    />
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Focus Pal + Music */}
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
-                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); }}
+                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -260,7 +271,7 @@ export default function Home() {
                 </button>
 
                 <button
-                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); }}
+                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -275,6 +286,37 @@ export default function Home() {
 
               {/* Expandable panels */}
               <AnimatePresence>
+                {showTimerPicker && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-3 mb-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[5, 10, 15, 20, 25, 30, 45, 50, 60].map(min => (
+                          <button
+                            key={min}
+                            onClick={() => {
+                              setSettings(p => ({ ...p, workMinutes: min }));
+                              setShowTimerPicker(false);
+                            }}
+                            className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors ${
+                              settings.workMinutes === min
+                                ? 'bg-white/20 text-white ring-1 ring-white/30'
+                                : 'text-text-secondary hover:bg-white/10'
+                            }`}
+                            style={{ background: settings.workMinutes === min ? undefined : '#3a3a3c' }}
+                          >
+                            {min}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 {showSettings && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}

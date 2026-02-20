@@ -108,6 +108,13 @@ export function useTimer(settings = {}) {
     }
   }, [mode, completedSessions, longBreakInterval, switchMode]);
 
+  // Reset timeLeft when duration settings change (only when not running)
+  useEffect(() => {
+    if (!isRunning) {
+      setTimeLeft(getDuration(mode));
+    }
+  }, [workMinutes, shortBreakMinutes, longBreakMinutes]);
+
   // Timer tick
   useEffect(() => {
     if (!isRunning) return;
@@ -129,12 +136,6 @@ export function useTimer(settings = {}) {
     };
   }, [isRunning, handleComplete]);
 
-  // Update tray title when timer is running
-  useEffect(() => {
-    import('../lib/tauri-bridge').then(({ tauriBridge }) => {
-      tauriBridge.updateTrayTitle(isRunning ? display : '');
-    });
-  }, [display, isRunning]);
 
   return {
     mode,

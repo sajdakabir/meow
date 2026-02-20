@@ -18,9 +18,9 @@ pub fn run() {
             commands::window_close,
         ])
         .setup(|app| {
-            // Hide from dock on macOS (menu-bar-only app)
+            // Show in Dock so user can relaunch after quitting
             #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            app.set_activation_policy(tauri::ActivationPolicy::Regular);
 
             // Position windows (created by tauri.conf.json)
             windows::setup_windows(app)?;
@@ -31,15 +31,8 @@ pub fn run() {
             // Register global shortcuts
             commands::register_shortcuts(app)?;
 
-            // Start mouse tracking (notch hover + auto-hide)
+            // Start mouse tracking (auto-collapse when cursor leaves expanded popover)
             mouse_tracker::start(app.handle().clone());
-
-            // Show popover on first launch after a short delay
-            let handle = app.handle().clone();
-            std::thread::spawn(move || {
-                std::thread::sleep(std::time::Duration::from_millis(800));
-                let _ = windows::show_popover(&handle, true);
-            });
 
             Ok(())
         })
