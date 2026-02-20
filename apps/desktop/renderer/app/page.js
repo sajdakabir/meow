@@ -110,13 +110,6 @@ export default function Home() {
     };
   }, [timer.start, timer.pause, timer.reset]);
 
-  const collapse = () => {
-    setExpanded(false);
-    setShowSettings(false);
-    setShowSounds(false);
-    setShowPalPicker(false);
-  };
-
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
@@ -127,7 +120,7 @@ export default function Home() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15 }}
         style={{
-          background: expanded ? '#1c1c1e' : '#000000',
+          background: '#000000',
           borderRadius: expanded ? 22 : 0,
         }}
         layout
@@ -157,41 +150,10 @@ export default function Home() {
               {/* Notch gap — transparent spacer for the physical notch */}
               <div style={{ width: 170, flexShrink: 0 }} />
 
-              {/* Right wing — timer + controls */}
-              <div className="flex items-center gap-1">
-                <span className="text-[12px] font-semibold tabular-nums text-white/90 mr-0.5">
-                  {timerDisplay}
-                </span>
-                {timer.isRunning ? (
-                  <>
-                    <button
-                      onClick={timer.pause}
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
-                    >
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                    </button>
-                    <button
-                      onClick={timer.reset}
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
-                    >
-                      <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="5" y="5" width="14" height="14" rx="2"/>
-                      </svg>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={timer.start}
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
-                  >
-                    <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M8 5.14v14l11-7-11-7z"/>
-                    </svg>
-                  </button>
-                )}
-              </div>
+              {/* Right wing — timer only */}
+              <span className="text-[12px] font-semibold tabular-nums text-white/90">
+                {timerDisplay}
+              </span>
             </motion.div>
           ) : (
             /* ── Expanded card ── */
@@ -202,16 +164,8 @@ export default function Home() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              {/* Collapse chevron + Settings gear */}
-              <div className="flex items-center justify-between px-4 pt-2.5">
-                <button
-                  onClick={collapse}
-                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="18 15 12 9 6 15"/>
-                  </svg>
-                </button>
+              {/* Settings gear */}
+              <div className="flex items-center justify-end px-4 pt-2.5">
                 <button
                   onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"

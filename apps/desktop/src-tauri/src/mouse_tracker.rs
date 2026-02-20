@@ -36,13 +36,21 @@ pub fn start(handle: AppHandle) {
             let center_x = screen_w / 2.0;
             let is_expanded = windows::POPOVER_VISIBLE.load(Ordering::SeqCst);
 
-            // ── Notch hover: expand when cursor enters notch area ──
+            // ── Hover to expand: only when cursor is over the actual window (wings) ──
             if !is_expanded && tick % 2 == 0 {
-                // Notch zone: within ~170px of screen center, y < 10px (very top)
-                let in_notch = cy <= 10.0 && (cx - center_x).abs() < 170.0;
-                if in_notch {
-                    let _ = windows::show_popover(&handle, false);
-                    continue;
+                if let Some(win) = handle.get_webview_window("popover") {
+                    if let (Ok(pos), Ok(size)) = (win.outer_position(), win.inner_size()) {
+                        let wx = pos.x as f64 / scale;
+                        let wy = pos.y as f64 / scale;
+                        let ww = size.width as f64 / scale;
+                        let wh = size.height as f64 / scale;
+                        let on_window = cx >= wx && cx <= wx + ww
+                            && cy >= wy && cy <= wy + wh;
+                        if on_window {
+                            let _ = windows::show_popover(&handle, false);
+                            continue;
+                        }
+                    }
                 }
             }
 
