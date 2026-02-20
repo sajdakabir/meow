@@ -5,7 +5,7 @@
   "identifier": "com.zenfocus.app",
   "build": {
     "beforeDevCommand": "npm run next-dev",
-    "devUrl": "http://localhost:3456",
+    "devUrl": "http://localhost:3457",
     "beforeBuildCommand": "npm run next-build",
     "frontendDist": "../renderer/out"
   },

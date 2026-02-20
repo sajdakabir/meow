@@ -108,6 +108,13 @@ export function useTimer(settings = {}) {
     }
   }, [mode, completedSessions, longBreakInterval, switchMode]);
 
+  // Reset timeLeft when duration settings change (only when not running)
+  useEffect(() => {
+    if (!isRunning) {
+      setTimeLeft(getDuration(mode));
+    }
+  }, [workMinutes, shortBreakMinutes, longBreakMinutes]);
+
   // Timer tick
   useEffect(() => {
     if (!isRunning) return;

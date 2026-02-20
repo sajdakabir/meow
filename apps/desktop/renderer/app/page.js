@@ -19,6 +19,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
+  const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [selectedPal, setSelectedPal] = useState(0);
   const [settings, setSettings] = useState({
     workMinutes: 25,
@@ -101,6 +102,7 @@ export default function Home() {
         setShowSettings(false);
         setShowSounds(false);
         setShowPalPicker(false);
+        setShowTimerPicker(false);
       }));
     };
     setup();
@@ -167,7 +169,7 @@ export default function Home() {
               {/* Settings gear */}
               <div className="flex items-center justify-end px-4 pt-2.5">
                 <button
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); }}
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -186,12 +188,13 @@ export default function Home() {
                   <button
                     onClick={() => {
                       if (!timer.isRunning) {
-                        const modes = ['work', 'shortBreak', 'longBreak'];
-                        const idx = modes.indexOf(timer.mode);
-                        timer.setMode(modes[(idx + 1) % modes.length]);
+                        setShowTimerPicker(!showTimerPicker);
+                        setShowSettings(false);
+                        setShowSounds(false);
+                        setShowPalPicker(false);
                       }
                     }}
-                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-[64px] text-center hover:bg-bg-active transition-colors"
+                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-16 text-center hover:bg-bg-active transition-colors"
                     style={{ background: '#3a3a3c', borderRadius: 12 }}
                   >
                     {Math.ceil(timer.timeLeft / 60)} min
@@ -213,40 +216,43 @@ export default function Home() {
                     )}
                   </div>
 
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={timer.toggle}
-                    className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}
-                  >
-                    {timer.isRunning ? (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                      </svg>
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary ml-0.5">
-                        <path d="M8 5.14v14l11-7-11-7z"/>
-                      </svg>
+                  <div className="flex items-center gap-1.5">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={timer.toggle}
+                      className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                      style={{ background: 'rgba(255,255,255,0.08)' }}
+                    >
+                      {timer.isRunning ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
+                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary ml-0.5">
+                          <path d="M8 5.14v14l11-7-11-7z"/>
+                        </svg>
+                      )}
+                    </motion.button>
+                    {timer.isRunning && (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={timer.reset}
+                        className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                        style={{ background: 'rgba(255,255,255,0.08)' }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
+                          <rect x="5" y="5" width="14" height="14" rx="2"/>
+                        </svg>
+                      </motion.button>
                     )}
-                  </motion.button>
-                </div>
-
-                {timer.isRunning && (
-                  <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: '#2c2c2e' }}>
-                    <motion.div
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: isBreak ? '#34d399' : '#6366f1' }}
-                      animate={{ width: `${timer.progress * 100}%` }}
-                      transition={{ duration: 0.5 }}
-                    />
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Focus Pal + Music */}
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
-                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); }}
+                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -255,7 +261,7 @@ export default function Home() {
                 </button>
 
                 <button
-                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); }}
+                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -270,6 +276,37 @@ export default function Home() {
 
               {/* Expandable panels */}
               <AnimatePresence>
+                {showTimerPicker && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-3 mb-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[5, 10, 15, 20, 25, 30, 45, 50, 60].map(min => (
+                          <button
+                            key={min}
+                            onClick={() => {
+                              setSettings(p => ({ ...p, workMinutes: min }));
+                              setShowTimerPicker(false);
+                            }}
+                            className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors ${
+                              settings.workMinutes === min
+                                ? 'bg-white/20 text-white ring-1 ring-white/30'
+                                : 'text-text-secondary hover:bg-white/10'
+                            }`}
+                            style={{ background: settings.workMinutes === min ? undefined : '#3a3a3c' }}
+                          >
+                            {min}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 {showSettings && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}

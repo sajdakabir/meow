@@ -6,7 +6,7 @@ use tauri::{AppHandle, Emitter, Manager};
 /// The window is always visible as a notch pill; this just tracks expand/collapse.
 pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
-const OUTSIDE_THRESHOLD: u32 = 3; // ~300ms before auto-collapse
+const OUTSIDE_THRESHOLD: u32 = 8; // ~640ms before auto-collapse
 
 const COLLAPSED_WIDTH: f64 = 300.0; // wider than notch so content sits on both wings
 const EXPANDED_WIDTH: f64 = 350.0;
