@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
-  "productName": "Zen Focus",
+  "productName": "meow",
   "version": "1.0.0",
   "identifier": "com.zenfocus.app",
   "build": {
@@ -19,9 +19,9 @@
       {
         "label": "popover",
         "url": "index.html",
-        "title": "Zen Focus",
-        "width": 200,
-        "height": 50,
+        "title": "meow",
+        "width": 350,
+        "height": 37,
         "decorations": false,
         "transparent": true,
         "resizable": false,

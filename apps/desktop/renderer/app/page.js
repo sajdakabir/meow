@@ -120,7 +120,7 @@ export default function Home() {
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '4px 8px 0' }}>
+    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
         initial={{ opacity: 0 }}
@@ -128,7 +128,7 @@ export default function Home() {
         transition={{ duration: 0.15 }}
         style={{
           background: expanded ? '#1c1c1e' : '#000000',
-          borderRadius: expanded ? 22 : 18,
+          borderRadius: expanded ? 22 : 0,
         }}
         layout
         layoutTransition={{ type: 'spring', stiffness: 380, damping: 32 }}
@@ -143,37 +143,40 @@ export default function Home() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
               className="no-drag flex items-center justify-between"
-              style={{ height: 37, paddingLeft: 12, paddingRight: 8 }}
+              style={{ height: 32, paddingLeft: 10, paddingRight: 8 }}
             >
-              {/* Left wing — cat icon, click to expand */}
+              {/* Left wing — cat icon */}
               <button
                 onClick={() => setExpanded(true)}
-                className="flex items-center justify-center text-[17px] opacity-90 hover:opacity-100 transition-opacity"
-                style={{ width: 28, height: 28 }}
+                className="flex items-center justify-center text-[15px] opacity-90 hover:opacity-100 transition-opacity"
+                style={{ width: 26, height: 26 }}
               >
                 {pal.icon}
               </button>
 
+              {/* Notch gap — transparent spacer for the physical notch */}
+              <div style={{ width: 170, flexShrink: 0 }} />
+
               {/* Right wing — timer + controls */}
               <div className="flex items-center gap-1">
-                <span className="text-[13px] font-semibold tabular-nums text-white/90 mr-1">
+                <span className="text-[12px] font-semibold tabular-nums text-white/90 mr-0.5">
                   {timerDisplay}
                 </span>
                 {timer.isRunning ? (
                   <>
                     <button
                       onClick={timer.pause}
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                     >
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
                       </svg>
                     </button>
                     <button
                       onClick={timer.reset}
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
+                      className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                     >
-                      <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                      <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
                         <rect x="5" y="5" width="14" height="14" rx="2"/>
                       </svg>
                     </button>
@@ -181,9 +184,9 @@ export default function Home() {
                 ) : (
                   <button
                     onClick={timer.start}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors"
                   >
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5.14v14l11-7-11-7z"/>
                     </svg>
                   </button>

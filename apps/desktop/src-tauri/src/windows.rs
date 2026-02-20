@@ -8,7 +8,7 @@ pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
 const OUTSIDE_THRESHOLD: u32 = 3; // ~300ms before auto-collapse
 
-const COLLAPSED_WIDTH: f64 = 200.0; // matches notch width
+const COLLAPSED_WIDTH: f64 = 300.0; // wider than notch so content sits on both wings
 const EXPANDED_WIDTH: f64 = 350.0;
 
 /// Position the always-visible notch pill at startup and set it above the menu bar.
@@ -18,7 +18,7 @@ pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>>
         crate::platform::set_above_menu_bar(&win);
 
         // Start collapsed at notch width
-        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 50.0));
+        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 37.0));
 
         let monitor = app.primary_monitor()?.ok_or("no primary monitor")?;
         let scale = monitor.scale_factor();
@@ -69,7 +69,7 @@ pub fn hide_popover(handle: &AppHandle, _immediate: bool) -> Result<(), Box<dyn 
         POPOVER_VISIBLE.store(false, Ordering::SeqCst);
 
         // Shrink back to notch width and re-center
-        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 50.0));
+        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 37.0));
         let _ = center_popover(handle, COLLAPSED_WIDTH);
     }
     Ok(())
