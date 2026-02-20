@@ -8,35 +8,45 @@ pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
 const OUTSIDE_THRESHOLD: u32 = 3; // ~300ms before auto-collapse
 
-/// Position the always-visible notch pill at startup.
+const COLLAPSED_WIDTH: f64 = 200.0; // matches notch width
+const EXPANDED_WIDTH: f64 = 350.0;
+
+/// Position the always-visible notch pill at startup and set it above the menu bar.
 pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(win) = app.get_webview_window("popover") {
+        #[cfg(target_os = "macos")]
+        crate::platform::set_above_menu_bar(&win);
+
+        // Start collapsed at notch width
+        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 50.0));
+
         let monitor = app.primary_monitor()?.ok_or("no primary monitor")?;
         let scale = monitor.scale_factor();
         let sw = monitor.size().width as f64 / scale;
-        let ww = win.inner_size()?.width as f64 / scale;
-        win.set_position(tauri::LogicalPosition::new(sw / 2.0 - ww / 2.0, 0.0))?;
+        win.set_position(tauri::LogicalPosition::new(sw / 2.0 - COLLAPSED_WIDTH / 2.0, 0.0))?;
     }
     Ok(())
 }
 
-/// Re-center the popover window horizontally.
-fn position_popover(handle: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+/// Re-center the popover window horizontally at the given width.
+fn center_popover(handle: &AppHandle, width: f64) -> Result<(), Box<dyn std::error::Error>> {
     let win = handle.get_webview_window("popover").ok_or("popover not found")?;
     let monitor = handle.primary_monitor()?.ok_or("no primary monitor")?;
     let scale = monitor.scale_factor();
     let sw = monitor.size().width as f64 / scale;
-    let ww = win.inner_size()?.width as f64 / scale;
-    win.set_position(tauri::LogicalPosition::new(sw / 2.0 - ww / 2.0, 0.0))?;
+    win.set_position(tauri::LogicalPosition::new(sw / 2.0 - width / 2.0, 0.0))?;
     Ok(())
 }
 
 /// Expand the popover card. Emits "popover-expand" to the frontend.
 pub fn show_popover(handle: &AppHandle, focus: bool) -> Result<(), Box<dyn std::error::Error>> {
     reset_outside_count();
-    position_popover(handle)?;
 
     if let Some(win) = handle.get_webview_window("popover") {
+        // Widen to expanded size and re-center
+        let _ = win.set_size(tauri::LogicalSize::new(EXPANDED_WIDTH, 50.0));
+        center_popover(handle, EXPANDED_WIDTH)?;
+
         let _ = win.emit("popover-expand", ());
         if focus {
             let _ = win.set_focus();
@@ -57,6 +67,10 @@ pub fn hide_popover(handle: &AppHandle, _immediate: bool) -> Result<(), Box<dyn 
     if let Some(win) = handle.get_webview_window("popover") {
         let _ = win.emit("popover-collapse", ());
         POPOVER_VISIBLE.store(false, Ordering::SeqCst);
+
+        // Shrink back to notch width and re-center
+        let _ = win.set_size(tauri::LogicalSize::new(COLLAPSED_WIDTH, 50.0));
+        let _ = center_popover(handle, COLLAPSED_WIDTH);
     }
     Ok(())
 }

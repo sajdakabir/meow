@@ -120,7 +120,7 @@ export default function Home() {
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0' }}>
+    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '4px 8px 0' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
         initial={{ opacity: 0 }}
@@ -128,7 +128,7 @@ export default function Home() {
         transition={{ duration: 0.15 }}
         style={{
           background: expanded ? '#1c1c1e' : '#000000',
-          borderRadius: expanded ? 22 : '0 0 12px 12px',
+          borderRadius: expanded ? 22 : 18,
         }}
         layout
         layoutTransition={{ type: 'spring', stiffness: 380, damping: 32 }}
@@ -143,7 +143,7 @@ export default function Home() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12 }}
               className="no-drag flex items-center justify-between"
-              style={{ height: 36, paddingLeft: 14, paddingRight: 10 }}
+              style={{ height: 37, paddingLeft: 12, paddingRight: 8 }}
             >
               {/* Left wing — cat icon, click to expand */}
               <button

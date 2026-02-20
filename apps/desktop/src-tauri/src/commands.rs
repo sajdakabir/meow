@@ -6,7 +6,7 @@ use tauri_plugin_notification::NotificationExt;
 #[tauri::command]
 pub async fn resize_window(app: AppHandle, height: f64) -> Result<(), String> {
     if let Some(win) = app.get_webview_window("popover") {
-        let clamped = height.max(100.0).min(600.0);
+        let clamped = height.max(45.0).min(600.0);
         let scale = win.scale_factor().map_err(|e| e.to_string())?;
         let cur = win.inner_size().map_err(|e| e.to_string())?;
         win.set_size(tauri::LogicalSize::new(cur.width as f64 / scale, clamped))

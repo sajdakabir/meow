@@ -18,9 +18,9 @@ pub fn run() {
             commands::window_close,
         ])
         .setup(|app| {
-            // Hide from dock on macOS (menu-bar-only app)
+            // Show in Dock so user can relaunch after quitting
             #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            app.set_activation_policy(tauri::ActivationPolicy::Regular);
 
             // Position windows (created by tauri.conf.json)
             windows::setup_windows(app)?;
