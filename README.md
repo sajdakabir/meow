@@ -8,7 +8,7 @@ A desktop productivity app with a Pomodoro timer, ambient sounds, and cute anima
 
 | App | Description |
 |-----|-------------|
-| `apps/desktop` | Electron + Next.js desktop app |
+| `apps/desktop` | Tauri (Rust) + Next.js desktop app |
 | `apps/landing` | Next.js marketing/landing page |
 
 ## Features
@@ -24,7 +24,7 @@ A desktop productivity app with a Pomodoro timer, ambient sounds, and cute anima
 
 ## Tech Stack
 
-- **Electron** — Desktop shell
+- **Tauri (Rust)** — Desktop shell
 - **Next.js** — UI framework (static export for desktop, app router for landing)
 - **Tailwind CSS v4** — Styling
 - **Framer Motion** — Animations
@@ -35,6 +35,7 @@ A desktop productivity app with a Pomodoro timer, ambient sounds, and cute anima
 ### Prerequisites
 
 - Node.js 18+
+- Rust (latest stable via [rustup](https://rustup.rs))
 - npm
 
 ### Install
@@ -71,35 +72,36 @@ Build the landing page:
 npm run build:landing
 ```
 
-The desktop build produces a distributable `.dmg` (macOS) or `.exe` (Windows) in `apps/desktop/dist/`.
+The desktop build produces a distributable `.dmg` (macOS) or `.exe` (Windows) in `apps/desktop/src-tauri/target/release/bundle/`.
 
 ## Project Structure
 
 ```
 meow/
 ├── apps/
-│   ├── desktop/                   # Electron + Next.js desktop app
-│   │   ├── main/
-│   │   │   ├── main.js            # Window, tray, IPC, custom protocol
-│   │   │   └── preload.js         # Context bridge for renderer
+│   ├── desktop/                   # Tauri + Next.js desktop app
+│   │   ├── src-tauri/             # Rust backend (Tauri)
+│   │   │   ├── src/
+│   │   │   │   ├── main.rs        # Tauri app entry point
+│   │   │   │   ├── lib.rs         # App setup and plugin registration
+│   │   │   │   ├── windows.rs     # Window management and popover logic
+│   │   │   │   ├── tray.rs        # System tray setup
+│   │   │   │   ├── commands.rs    # Tauri commands (IPC handlers)
+│   │   │   │   ├── mouse_tracker.rs # Cursor tracking for auto-collapse
+│   │   │   │   └── platform/      # macOS-specific APIs
+│   │   │   └── tauri.conf.json    # Tauri configuration
 │   │   ├── renderer/              # Next.js app (UI)
 │   │   │   ├── app/
 │   │   │   │   ├── layout.js      # Root layout
 │   │   │   │   ├── page.js        # Main app page
 │   │   │   │   └── globals.css    # Tailwind + custom animations
-│   │   │   ├── components/
-│   │   │   │   ├── Timer.jsx      # Circular progress timer
-│   │   │   │   ├── Controls.jsx   # Play/Pause/Reset/Skip buttons
-│   │   │   │   ├── AmbientSounds.jsx  # Sound mixer panel
-│   │   │   │   ├── FocusPal.jsx   # Animated animal companions
-│   │   │   │   ├── Settings.jsx   # Settings panel
-│   │   │   │   └── TitleBar.jsx   # Custom window title bar
-│   │   │   ├── hooks/
-│   │   │   │   ├── useTimer.js    # Pomodoro timer logic
-│   │   │   │   └── useAudio.js    # Audio playback management
-│   │   │   └── public/
-│   │   │       ├── sounds/        # Ambient sound files (.wav)
-│   │   │       └── tray-icon.png  # Menu bar icon
+│   │   │   └── components/
+│   │   │       ├── Timer.jsx      # Circular progress timer
+│   │   │       ├── Controls.jsx   # Play/Pause/Reset/Skip buttons
+│   │   │       ├── AmbientSounds.jsx  # Sound mixer panel
+│   │   │       ├── FocusPal.jsx   # Animated animal companions
+│   │   │       ├── Settings.jsx   # Settings panel
+│   │   │       └── TitleBar.jsx   # Custom window title bar
 │   │   └── package.json
 │   └── landing/                   # Next.js marketing site
 │       ├── app/
