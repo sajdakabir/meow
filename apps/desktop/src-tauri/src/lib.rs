@@ -18,9 +18,10 @@ pub fn run() {
             commands::window_close,
         ])
         .setup(|app| {
-            // Show in Dock so user can relaunch after quitting
+            // Accessory policy: no dock icon, but windows can float above full-screen apps.
+            // The tray icon is still available for accessing the app.
             #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Regular);
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
             // Position windows (created by tauri.conf.json)
             windows::setup_windows(app)?;
