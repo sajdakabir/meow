@@ -25,7 +25,7 @@ export default function Home() {
     workMinutes: 25,
     shortBreakMinutes: 5,
     longBreakMinutes: 15,
-    autoStartBreaks: true,
+    autoStartBreaks: false,
     autoStartWork: false,
   });
   const containerRef = useRef(null);
