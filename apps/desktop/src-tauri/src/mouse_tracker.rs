@@ -22,9 +22,9 @@ pub fn start(handle: AppHandle) {
             std::thread::sleep(std::time::Duration::from_millis(80));
             tick += 1;
 
-            // Re-apply window level & behavior every ~5 seconds on the main thread
+            // Re-apply window level & behavior every ~2 seconds on the main thread
             // (AppKit/NSWindow calls MUST run on the main thread or they silently fail)
-            if tick % 62 == 1 {
+            if tick % 25 == 1 {
                 let h = handle.clone();
                 let _ = handle.run_on_main_thread(move || {
                     if let Some(win) = h.get_webview_window("popover") {
