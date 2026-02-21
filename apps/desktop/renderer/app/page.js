@@ -70,7 +70,28 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  const playChime = useCallback(() => {
+    try {
+      const ctx = new AudioContext();
+      // Three-note ascending chime: C5 → E5 → G5
+      [[523.25, 0], [659.25, 0.18], [783.99, 0.36]].forEach(([freq, when]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + when);
+        gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + when + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.8);
+        osc.start(ctx.currentTime + when);
+        osc.stop(ctx.currentTime + when + 0.85);
+      });
+    } catch {}
+  }, []);
+
   const handleTimerComplete = useCallback((mode, sessions) => {
+    playChime();
     if (mode === 'work') {
       tauriBridge.showNotification(
         'Focus complete!',
@@ -79,7 +100,7 @@ export default function Home() {
     } else {
       tauriBridge.showNotification('Break over!', 'Ready to focus again?');
     }
-  }, []);
+  }, [playChime]);
 
   const timer = useTimer({ ...settings, onComplete: handleTimerComplete });
   const audio = useAudio();
@@ -127,13 +148,13 @@ export default function Home() {
   const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
 
   return (
-    <div ref={containerRef} style={{ padding: expanded ? '4px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+    <div ref={containerRef} style={{ padding: expanded ? '6px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
       <motion.div
         className="overflow-hidden flex flex-col"
         initial={{ opacity: 0 }}
         animate={{
           opacity: 1,
-          borderRadius: expanded ? '22px' : '10px',
+          borderRadius: expanded ? '28px' : '14px',
         }}
         transition={{
           opacity: { duration: 0.15 },

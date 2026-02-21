@@ -5,7 +5,7 @@
   "main": "main/main.js",
   "scripts": {
     "dev": "concurrently \"npm run next-dev\" \"npm run electron-dev\"",
-    "next-dev": "next dev -p 3457 renderer",
+    "next-dev": "next dev -p 3458 renderer",
     "electron-dev": "sleep 4 && ZEN_DEV=1 ELECTRON_RUN_AS_NODE= electron .",
     "next-build": "next build renderer",
     "start": "ELECTRON_RUN_AS_NODE= electron .",

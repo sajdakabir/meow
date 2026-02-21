@@ -25,6 +25,21 @@ pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>>
         let sw = monitor.size().width as f64 / scale;
         win.set_position(tauri::LogicalPosition::new(sw / 2.0 - COLLAPSED_WIDTH / 2.0, 0.0))?;
     }
+
+    // Re-apply NSWindow settings after 1s on the main thread, to override
+    // any Tauri post-setup config processing that may strip our flags
+    let h = app.handle().clone();
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(1000));
+        let h2 = h.clone();
+        let _ = h.run_on_main_thread(move || {
+            if let Some(win) = h2.get_webview_window("popover") {
+                #[cfg(target_os = "macos")]
+                crate::platform::set_above_menu_bar(&win);
+            }
+        });
+    });
+
     Ok(())
 }
 
