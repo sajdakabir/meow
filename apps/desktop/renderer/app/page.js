@@ -20,6 +20,7 @@ export default function Home() {
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
+  const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [settings, setSettings] = useState({
     workMinutes: 25,
@@ -241,13 +242,18 @@ export default function Home() {
                       <span className="text-text-primary text-lg font-medium tabular-nums tracking-wide">
                         {timer.display}
                       </span>
+                    ) : timer.mode === 'work' ? (
+                      <input
+                        type="text"
+                        value={taskName}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        placeholder="Task (optional)"
+                        onMouseDown={() => tauriBridge.focusWindow()}
+                        className="no-drag w-full bg-transparent text-center text-text-muted text-sm outline-none placeholder:text-text-muted"
+                      />
                     ) : (
                       <span className="text-text-muted text-sm">
-                        {timer.mode === 'work'
-                          ? 'Task (optional)'
-                          : timer.mode === 'shortBreak'
-                          ? 'Short Break'
-                          : 'Long Break'}
+                        {timer.mode === 'shortBreak' ? 'Short Break' : 'Long Break'}
                       </span>
                     )}
                   </div>

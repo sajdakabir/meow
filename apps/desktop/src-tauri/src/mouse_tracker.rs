@@ -22,9 +22,12 @@ pub fn start(handle: AppHandle) {
             std::thread::sleep(std::time::Duration::from_millis(80));
             tick += 1;
 
-            // Re-apply window level & behavior every ~2 seconds on the main thread
+            // Re-apply window level & behavior every ~500ms on the main thread.
+            // This catches full-screen space transitions quickly — without this,
+            // a newly created full-screen space could leave the window invisible
+            // for up to the full interval.
             // (AppKit/NSWindow calls MUST run on the main thread or they silently fail)
-            if tick % 25 == 1 {
+            if tick % 6 == 1 {
                 let h = handle.clone();
                 let _ = handle.run_on_main_thread(move || {
                     if let Some(win) = h.get_webview_window("popover") {

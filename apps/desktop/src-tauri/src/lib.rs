@@ -16,6 +16,7 @@ pub fn run() {
             commands::show_notification,
             commands::update_tray_title,
             commands::window_close,
+            commands::focus_window,
         ])
         .setup(|app| {
             // Accessory policy: no dock icon, but windows can float above full-screen apps.
@@ -31,6 +32,12 @@ pub fn run() {
 
             // Register global shortcuts
             commands::register_shortcuts(app)?;
+
+            // Register for NSWorkspaceActiveSpaceDidChangeNotification so the
+            // notch window is immediately re-asserted when any app enters or
+            // exits full-screen (which creates / destroys a dedicated Space).
+            #[cfg(target_os = "macos")]
+            crate::platform::register_space_observer(app.handle().clone());
 
             // Start mouse tracking (auto-collapse when cursor leaves expanded popover)
             mouse_tracker::start(app.handle().clone());

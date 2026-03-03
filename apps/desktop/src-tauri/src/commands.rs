@@ -47,6 +47,22 @@ pub async fn window_close(app: AppHandle) -> Result<(), String> {
     crate::windows::hide_popover(&app, true).map_err(|e| e.to_string())
 }
 
+/// Give the popover window keyboard focus so text inputs work.
+///
+/// Accessory-policy apps are never "active" in the macOS sense, so
+/// makeKeyAndOrderFront alone doesn't establish a key window. This command
+/// activates the app (ignoring other apps) and then focuses the window so
+/// the WebView's <input> elements can receive typing.
+#[tauri::command]
+pub async fn focus_window(app: AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    crate::platform::activate_app_for_input();
+    if let Some(win) = app.get_webview_window("popover") {
+        win.set_focus().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Register the global Cmd+Shift+F shortcut to toggle the popover.
 pub fn register_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
