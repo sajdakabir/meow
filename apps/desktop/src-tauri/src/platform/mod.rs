@@ -12,3 +12,6 @@ pub use macos::register_space_observer;
 
 #[cfg(target_os = "macos")]
 pub use macos::activate_app_for_input;
+
+#[cfg(target_os = "macos")]
+pub use macos::prevent_window_hiding;
