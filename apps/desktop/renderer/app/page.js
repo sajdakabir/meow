@@ -20,6 +20,7 @@ export default function Home() {
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
+  const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [settings, setSettings] = useState({
     workMinutes: 25,
@@ -221,6 +222,7 @@ export default function Home() {
                   className="px-4 py-3 flex items-center gap-3"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
+                  {/* Left pill: countdown while running, duration picker when idle */}
                   <button
                     onClick={() => {
                       if (!timer.isRunning) {
@@ -230,24 +232,38 @@ export default function Home() {
                         setShowPalPicker(false);
                       }
                     }}
-                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-16 text-center hover:bg-bg-active transition-colors"
-                    style={{ background: '#3a3a3c', borderRadius: 12 }}
+                    className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors"
+                    style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
-                    {Math.ceil(timer.timeLeft / 60)} min
-                  </button>
-
-                  <div className="flex-1 text-center">
                     {timer.isRunning ? (
-                      <span className="text-text-primary text-lg font-medium tabular-nums tracking-wide">
+                      <span className="text-text-primary text-base tabular-nums tracking-wide">
                         {timer.display}
                       </span>
                     ) : (
+                      <span className="text-text-primary text-sm hover:bg-bg-active">
+                        {Math.ceil(timer.timeLeft / 60)} min
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Center: task name while running, editable input when idle */}
+                  <div className="flex-1 text-center min-w-0">
+                    {timer.isRunning ? (
+                      <span className="text-text-muted text-sm truncate block">
+                        {taskName || (timer.mode === 'shortBreak' ? 'Short Break' : timer.mode === 'longBreak' ? 'Long Break' : '')}
+                      </span>
+                    ) : timer.mode === 'work' ? (
+                      <input
+                        type="text"
+                        value={taskName}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        placeholder="Task (optional)"
+                        onMouseDown={() => tauriBridge.focusWindow()}
+                        className="no-drag w-full bg-transparent text-center text-text-muted text-sm outline-none placeholder:text-text-muted"
+                      />
+                    ) : (
                       <span className="text-text-muted text-sm">
-                        {timer.mode === 'work'
-                          ? 'Task (optional)'
-                          : timer.mode === 'shortBreak'
-                          ? 'Short Break'
-                          : 'Long Break'}
+                        {timer.mode === 'shortBreak' ? 'Short Break' : 'Long Break'}
                       </span>
                     )}
                   </div>

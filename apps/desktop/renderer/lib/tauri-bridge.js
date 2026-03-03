@@ -40,6 +40,11 @@ export const tauriBridge = {
     if (t) t.core.invoke('window_close');
   },
 
+  focusWindow: () => {
+    const t = getTauri();
+    if (t) t.core.invoke('focus_window');
+  },
+
   onStartFocus: async (cb) => {
     const t = getTauri();
     if (t) return t.event.listen('tray-start-focus', () => cb());
