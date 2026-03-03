@@ -222,6 +222,7 @@ export default function Home() {
                   className="px-4 py-3 flex items-center gap-3"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
+                  {/* Left pill: countdown while running, duration picker when idle */}
                   <button
                     onClick={() => {
                       if (!timer.isRunning) {
@@ -231,16 +232,25 @@ export default function Home() {
                         setShowPalPicker(false);
                       }
                     }}
-                    className="no-drag text-text-primary text-sm font-semibold px-3 py-1.5 min-w-16 text-center hover:bg-bg-active transition-colors"
-                    style={{ background: '#3a3a3c', borderRadius: 12 }}
+                    className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors"
+                    style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
-                    {Math.ceil(timer.timeLeft / 60)} min
+                    {timer.isRunning ? (
+                      <span className="text-text-primary text-base tabular-nums tracking-wide">
+                        {timer.display}
+                      </span>
+                    ) : (
+                      <span className="text-text-primary text-sm hover:bg-bg-active">
+                        {Math.ceil(timer.timeLeft / 60)} min
+                      </span>
+                    )}
                   </button>
 
-                  <div className="flex-1 text-center">
+                  {/* Center: task name while running, editable input when idle */}
+                  <div className="flex-1 text-center min-w-0">
                     {timer.isRunning ? (
-                      <span className="text-text-primary text-lg font-medium tabular-nums tracking-wide">
-                        {timer.display}
+                      <span className="text-text-muted text-sm truncate block">
+                        {taskName || (timer.mode === 'shortBreak' ? 'Short Break' : timer.mode === 'longBreak' ? 'Long Break' : '')}
                       </span>
                     ) : timer.mode === 'work' ? (
                       <input
