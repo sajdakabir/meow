@@ -27,7 +27,9 @@ pub fn setup_windows(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>>
     }
 
     // Re-apply NSWindow settings after 1s on the main thread, to override
-    // any Tauri post-setup config processing that may strip our flags
+    // any Tauri post-setup config processing that may strip our flags.
+    // Also ISA-swap the window to block orderOut: — must happen AFTER init
+    // because Tauri's own setup calls orderOut: internally.
     let h = app.handle().clone();
     std::thread::spawn(move || {
         std::thread::sleep(std::time::Duration::from_millis(1000));
