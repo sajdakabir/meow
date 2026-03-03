@@ -22,7 +22,7 @@ html, body {
   overflow: hidden;
 }
 
-button { cursor: pointer; }
+button, [role="button"] { cursor: pointer !important; }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

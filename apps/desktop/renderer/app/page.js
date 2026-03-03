@@ -180,7 +180,7 @@ export default function Home() {
               {/* Left wing — cat icon */}
               <button
                 onClick={() => setExpanded(true)}
-                className="flex items-center justify-center text-[15px] opacity-90 hover:opacity-100 transition-opacity"
+                className="flex items-center justify-center text-[15px] opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
                 style={{ width: 26, height: 26 }}
               >
                 {pal.icon}
@@ -207,7 +207,7 @@ export default function Home() {
               <div className="flex items-center justify-end px-4 pt-2.5">
                 <button
                   onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
-                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors"
+                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
@@ -232,7 +232,7 @@ export default function Home() {
                         setShowPalPicker(false);
                       }
                     }}
-                    className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors"
+                    className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors cursor-pointer"
                     style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
                     {timer.isRunning ? (
@@ -272,7 +272,7 @@ export default function Home() {
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={timer.toggle}
-                      className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                      className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
                       style={{ background: 'rgba(255,255,255,0.08)' }}
                     >
                       {timer.isRunning ? (
@@ -289,7 +289,7 @@ export default function Home() {
                       <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={timer.reset}
-                        className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                        className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
                         style={{ background: 'rgba(255,255,255,0.08)' }}
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-text-primary">
@@ -305,7 +305,7 @@ export default function Home() {
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
                   onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); }}
-                  className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+                  className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
                   <span className="text-sm text-text-secondary font-medium">Focus Pal</span>
@@ -314,7 +314,7 @@ export default function Home() {
 
                 <button
                   onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); }}
-                  className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors"
+                  className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
                   <span className="text-sm text-text-secondary font-medium">Music</span>
@@ -344,7 +344,7 @@ export default function Home() {
                               setSettings(p => ({ ...p, workMinutes: min }));
                               setShowTimerPicker(false);
                             }}
-                            className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors ${
+                            className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
                               settings.workMinutes === min
                                 ? 'bg-white/20 text-white ring-1 ring-white/30'
                                 : 'text-text-secondary hover:bg-white/10'
@@ -378,10 +378,10 @@ export default function Home() {
                             <div className="text-[10px] text-text-muted mb-1">{s.label}</div>
                             <div className="flex items-center justify-center gap-1 px-2 py-1" style={{ background: '#1c1c1e', borderRadius: 10 }}>
                               <button onClick={() => setSettings(p => ({...p, [s.key]: Math.max(1, p[s.key] - 5)}))}
-                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5">{'\u2212'}</button>
+                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">{'\u2212'}</button>
                               <span className="text-sm font-medium text-text-primary w-6 text-center">{s.val}</span>
                               <button onClick={() => setSettings(p => ({...p, [s.key]: Math.min(120, p[s.key] + 5)}))}
-                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5">+</button>
+                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">+</button>
                             </div>
                           </div>
                         ))}
@@ -394,7 +394,7 @@ export default function Home() {
                           <div key={s.key} className="flex items-center justify-between">
                             <span className="text-xs text-text-secondary">{s.label}</span>
                             <button onClick={() => setSettings(p => ({...p, [s.key]: !p[s.key]}))}
-                              className={`no-drag w-8 h-[18px] rounded-full relative transition-colors ${s.val ? 'bg-accent' : 'bg-border'}`}>
+                              className={`no-drag w-8 h-[18px] rounded-full relative transition-colors cursor-pointer ${s.val ? 'bg-accent' : 'bg-border'}`}>
                               <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[2px] transition-all ${s.val ? 'left-[16px]' : 'left-[2px]'}`}/>
                             </button>
                           </div>
@@ -429,7 +429,7 @@ export default function Home() {
                             <div key={s.id} className="flex flex-col items-center">
                               <button
                                 onClick={() => audio.toggleSound(s.id)}
-                                className={`no-drag w-full aspect-square flex flex-col items-center justify-center gap-0.5 transition-all text-center ${
+                                className={`no-drag w-full aspect-square flex flex-col items-center justify-center gap-0.5 transition-all text-center cursor-pointer ${
                                   active ? 'bg-accent/15 ring-1 ring-accent/30' : 'hover:bg-bg-hover'
                                 }`}
                                 style={{ borderRadius: 12, background: active ? undefined : '#1c1c1e' }}
@@ -464,7 +464,7 @@ export default function Home() {
                           <button
                             key={p.id}
                             onClick={() => { setSelectedPal(i); setShowPalPicker(false); }}
-                            className={`no-drag w-11 h-11 flex items-center justify-center text-xl transition-all ${
+                            className={`no-drag w-11 h-11 flex items-center justify-center text-xl transition-all cursor-pointer ${
                               i === selectedPal ? 'bg-accent/20 ring-1 ring-accent/40 scale-110' : 'hover:bg-bg-hover'
                             }`}
                             style={{ borderRadius: 12, background: i === selectedPal ? undefined : '#1c1c1e' }}
