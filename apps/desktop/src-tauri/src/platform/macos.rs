@@ -1,9 +1,14 @@
+use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
 use std::sync::{Mutex, Once};
 use tauri::WebviewWindow;
 
 // App handle stored so the ObjC space-change callback can reach Tauri.
 static SPACE_HANDLE: Mutex<Option<tauri::AppHandle>> = Mutex::new(None);
 static OBSERVER_ONCE: Once = Once::new();
+
+// Stores the ZFNotchWindow subclass pointer (as usize — raw ptrs aren't Send).
+static NOTCH_WIN_CLASS: AtomicUsize = AtomicUsize::new(0);
+static NOTCH_WIN_CLASS_ONCE: Once = Once::new();
 
 /// Set the alpha value (opacity) of a window on macOS.
 pub fn set_opacity(window: &WebviewWindow, opacity: f64) {
@@ -44,6 +49,59 @@ pub fn activate_app_for_input() {
     unsafe {
         let ns_app: id = msg_send![class!(NSApplication), sharedApplication];
         let _: () = msg_send![ns_app, activateIgnoringOtherApps: YES];
+    }
+}
+
+/// Override orderOut: on the notch window's NSWindow instance to a no-op,
+/// so macOS can never hide it during Space transitions or full-screen changes.
+///
+/// This works by creating a runtime subclass of whatever NSWindow subclass
+/// Tauri uses, overriding orderOut: to do nothing, then ISA-swapping the
+/// existing window instance into that subclass via object_setClass.
+pub fn prevent_window_hiding(window: &WebviewWindow) {
+    #[cfg(target_os = "macos")]
+    unsafe {
+        use cocoa::base::id;
+        use objc::declare::ClassDecl;
+        use objc::runtime::{Class, Object, Sel};
+        use objc::{msg_send, sel, sel_impl};
+
+        extern "C" {
+            fn object_setClass(obj: id, cls: *const Class) -> *const Class;
+        }
+
+        let ns_win = match window.ns_window() {
+            Ok(ptr) => ptr as id,
+            Err(_) => return,
+        };
+
+        // Create the subclass exactly once; store as usize for thread-safety.
+        NOTCH_WIN_CLASS_ONCE.call_once(|| {
+            // Get the actual runtime class of this window instance so we
+            // subclass it (not just NSWindow), preserving all Tauri overrides.
+            let actual_class: *mut Class = msg_send![ns_win, class];
+
+            let mut decl = match ClassDecl::new("ZFNotchWindow", &*actual_class) {
+                Some(d) => d,
+                None => return, // class already registered (shouldn't happen)
+            };
+
+            // Override orderOut: to be a no-op — the notch window is NEVER hidden.
+            extern "C" fn no_op_order_out(_this: &Object, _cmd: Sel, _sender: id) {}
+            decl.add_method(
+                sel!(orderOut:),
+                no_op_order_out as extern "C" fn(&Object, Sel, id),
+            );
+
+            let cls: &Class = decl.register();
+            NOTCH_WIN_CLASS.store(cls as *const Class as usize, AtomicOrdering::SeqCst);
+        });
+
+        // ISA-swap the window instance into our subclass.
+        let cls_ptr = NOTCH_WIN_CLASS.load(AtomicOrdering::SeqCst) as *const Class;
+        if !cls_ptr.is_null() {
+            object_setClass(ns_win, cls_ptr);
+        }
     }
 }
 
@@ -118,18 +176,19 @@ pub fn set_above_menu_bar(window: &WebviewWindow) {
 
                 ns_win.setHidesOnDeactivate_(NO);
 
-                // KEY INSIGHT: CanJoinAllSpaces + Stationary tells the window server to
-                // treat this as a "desktop background overlay." Desktop overlays are always
-                // rendered BEHIND full-screen app content on macOS Sequoia, regardless of
-                // window level.
+                // CanJoinAllSpaces: the window exists in every Space simultaneously,
+                // including newly-created full-screen Spaces. This is what ensures
+                // the window is present in the full-screen Space right away.
                 //
-                // MoveToActiveSpace makes the window a proper member of whichever Space
-                // is currently active — including newly created full-screen Spaces. Combined
-                // with FullScreenAuxiliary (which explicitly allows the window inside full-
-                // screen Spaces), the window level then correctly places it above the
-                // primary full-screen window.
+                // FullScreenAuxiliary: explicitly permits the window inside full-screen Spaces.
+                //
+                // No Stationary: avoid "desktop overlay" compositor treatment on macOS Sequoia
+                // (CanJoinAllSpaces + Stationary = desktop overlay = rendered behind full-screen).
+                //
+                // No MoveToActiveSpace: that flag only fires on user-initiated Space switches,
+                // not when macOS creates a brand-new Space for a full-screen app.
                 ns_win.setCollectionBehavior_(
-                    NSWindowCollectionBehavior::NSWindowCollectionBehaviorMoveToActiveSpace
+                    NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces
                         | NSWindowCollectionBehavior::NSWindowCollectionBehaviorIgnoresCycle
                         | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary,
                 );
