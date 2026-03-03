@@ -43,6 +43,9 @@ const K_CG_MAXIMUM_WINDOW_LEVEL_KEY: i32 = 15;
 /// keyboard events won't reach the WebView. Calling
 /// activateIgnoringOtherApps:YES makes the app momentarily active so the
 /// WebView input can accept typing.
+///
+/// Safe to call frequently — for Accessory-policy apps, activation is
+/// ephemeral and doesn't steal focus from the current foreground app.
 pub fn activate_app_for_input() {
     use cocoa::base::{id, YES};
     use objc::{class, msg_send, sel, sel_impl};
@@ -55,9 +58,8 @@ pub fn activate_app_for_input() {
 /// Override orderOut: on the notch window's NSWindow instance to a no-op,
 /// so macOS can never hide it during Space transitions or full-screen changes.
 ///
-/// This works by creating a runtime subclass of whatever NSWindow subclass
-/// Tauri uses, overriding orderOut: to do nothing, then ISA-swapping the
-/// existing window instance into that subclass via object_setClass.
+/// IMPORTANT: Call this AFTER the window is fully initialized (e.g. with a
+/// 1-second delay), not during setup — Tauri's own init calls orderOut:.
 pub fn prevent_window_hiding(window: &WebviewWindow) {
     #[cfg(target_os = "macos")]
     unsafe {
@@ -129,6 +131,9 @@ pub fn register_space_observer(handle: tauri::AppHandle) {
             if let Some(handle) = h {
                 let h2 = handle.clone();
                 let _ = handle.run_on_main_thread(move || {
+                    // Activate the app so orderFrontRegardless works in the
+                    // new Space. Accessory-policy apps don't steal focus.
+                    activate_app_for_input();
                     if let Some(win) = h2.get_webview_window("popover") {
                         set_above_menu_bar(&win);
                     }
@@ -163,8 +168,9 @@ pub fn register_space_observer(handle: tauri::AppHandle) {
 pub fn set_above_menu_bar(window: &WebviewWindow) {
     #[cfg(target_os = "macos")]
     {
-        use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior};
+        use cocoa::appkit::NSWindow;
         use cocoa::base::{id, NO};
+        use objc::{msg_send, sel, sel_impl};
 
         if let Ok(ns_window) = window.ns_window() {
             unsafe {
@@ -176,22 +182,19 @@ pub fn set_above_menu_bar(window: &WebviewWindow) {
 
                 ns_win.setHidesOnDeactivate_(NO);
 
-                // CanJoinAllSpaces: the window exists in every Space simultaneously,
-                // including newly-created full-screen Spaces. This is what ensures
-                // the window is present in the full-screen Space right away.
+                // Collection behavior flags (raw bits to include macOS 13+ flags
+                // not available in the cocoa crate):
                 //
-                // FullScreenAuxiliary: explicitly permits the window inside full-screen Spaces.
-                //
-                // No Stationary: avoid "desktop overlay" compositor treatment on macOS Sequoia
-                // (CanJoinAllSpaces + Stationary = desktop overlay = rendered behind full-screen).
-                //
-                // No MoveToActiveSpace: that flag only fires on user-initiated Space switches,
-                // not when macOS creates a brand-new Space for a full-screen app.
-                ns_win.setCollectionBehavior_(
-                    NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces
-                        | NSWindowCollectionBehavior::NSWindowCollectionBehaviorIgnoresCycle
-                        | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary,
-                );
+                // CanJoinAllSpaces    (1 << 0)  — window exists in ALL Spaces
+                // IgnoresCycle        (1 << 6)  — skip Cmd-` cycling
+                // FullScreenAuxiliary (1 << 8)  — allowed inside full-screen Spaces
+                // Auxiliary           (1 << 17) — macOS 13+: auxiliary window, appears
+                //                                 alongside any app (Stage Manager aware)
+                // CanJoinAllApplications (1 << 18) — macOS 13+: window can appear
+                //                                     with ANY active application
+                let behavior: u64 =
+                    (1 << 0) | (1 << 6) | (1 << 8) | (1 << 17) | (1 << 18);
+                let _: () = msg_send![ns_win, setCollectionBehavior: behavior];
 
                 ns_win.orderFrontRegardless();
             }
