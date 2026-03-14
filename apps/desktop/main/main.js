@@ -6,7 +6,7 @@ const fs = require('fs');
 app.disableHardwareAcceleration();
 
 const isDev = process.env.ZEN_DEV === '1';
-const DEV_URL = 'http://localhost:3456';
+const DEV_URL = 'http://localhost:3459';
 const OUT_DIR = path.join(__dirname, '..', 'renderer', 'out');
 
 let popoverWindow = null;

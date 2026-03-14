@@ -100,7 +100,7 @@ const FAQS = [
   { q: 'What Macs are supported?', a: 'meow works on macOS 12 (Monterey) and later, on both Intel and Apple Silicon Macs.' },
   { q: 'Can I hide the animal & timer?', a: 'Of course! You can toggle the focus pal and timer visibility anytime from the settings.' },
   { q: 'Does meow collect any data?', a: 'No. meow runs entirely offline on your machine. We don\'t collect any analytics or personal data whatsoever.' },
-  { q: 'How can I give feedback or report a bug?', a: 'We\'d love to hear from you! Reach out via email or open an issue on our GitHub.' },
+  { q: 'How can I give feedback or report a bug?', a: 'We\'d love to hear from you! open an issue on our GitHub.' },
 ];
 
 // ── Animated section wrapper ──
@@ -482,6 +482,7 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">Features</a>
             <a href="#faq" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">FAQ</a>
+            <a href="https://buymeacoffee.com/sajdakabir" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors hidden sm:block">Support</a>
             <a
               href="https://github.com/sajdakabir/meow/releases/latest"
               target="_blank"
@@ -694,21 +695,65 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src="/image.png" alt="meow" className="h-6 w-6 rounded-md" />
-              <span className="text-lg font-bold tracking-tight text-gray-900">meow</span>
-              <span className="text-gray-300">&middot;</span>
-              <span className="text-sm text-gray-400">Focus mode for your Mac</span>
+        <div className="max-w-5xl mx-auto px-6 py-16">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-10 sm:gap-8">
+            {/* Brand */}
+            <div className="sm:col-span-1">
+              <div className="flex items-center gap-2.5 mb-3">
+                <img src="/image.png" alt="meow" className="h-8 w-8 rounded-lg" />
+                <span className="text-lg font-bold tracking-tight text-gray-900">meow</span>
+              </div>
+              <p className="text-sm text-gray-400 leading-relaxed">
+                Focus mode. Made delightful.<br />
+                Free & open source for macOS.
+              </p>
             </div>
-            <div className="flex items-center gap-6">
-              <a href="https://x.com/sajdakabir" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">X</a>
-              <a href="https://github.com/sajdakabir/meow" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">GitHub</a>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">Product</h4>
+              <ul className="space-y-2.5">
+                <li><a href="#features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Features</a></li>
+                <li><a href="#faq" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">FAQ</a></li>
+                <li><a href="https://github.com/sajdakabir/meow/releases/latest" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Download</a></li>
+                <li><a href="https://github.com/sajdakabir/meow/releases" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Changelog</a></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">Support</h4>
+              <ul className="space-y-2.5">
+                <li><a href="https://buymeacoffee.com/sajdakabir" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Buy Me a Coffee</a></li>
+                <li><a href="https://github.com/sajdakabir/meow/issues" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Report a Bug</a></li>
+                <li><a href="https://github.com/sajdakabir/meow/discussions" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Discussions</a></li>
+                <li><a href="https://github.com/sajdakabir/meow#readme" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Documentation</a></li>
+              </ul>
+            </div>
+
+            {/* Connect */}
+            <div>
+              <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-4">Connect</h4>
+              <ul className="space-y-2.5">
+                <li>
+                  <a href="https://github.com/sajdakabir/meow" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="https://x.com/sajdakabir" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    X (Twitter)
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-gray-100 text-center">
+
+          <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-gray-400">Made with Claude Code max plan</p>
+            <p className="text-xs text-gray-400">v1.0.0</p>
           </div>
         </div>
       </footer>

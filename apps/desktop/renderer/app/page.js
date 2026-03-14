@@ -20,6 +20,7 @@ export default function Home() {
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [settings, setSettings] = useState({
@@ -123,6 +124,15 @@ export default function Home() {
         setShowSettings(true);
         setShowSounds(false);
         setShowPalPicker(false);
+        setShowAbout(false);
+      }));
+      unlisteners.push(await tauriBridge.on('open-about', () => {
+        setExpanded(true);
+        setShowAbout(true);
+        setShowSettings(false);
+        setShowSounds(false);
+        setShowPalPicker(false);
+        setShowTimerPicker(false);
       }));
       // Rust → JS: expand or collapse the popover
       unlisteners.push(await tauriBridge.on('popover-expand', () => {
@@ -136,6 +146,7 @@ export default function Home() {
         setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
+        setShowAbout(false);
         setTimeout(() => { isCollapsingRef.current = false; }, 300);
       }));
     };
@@ -203,10 +214,20 @@ export default function Home() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              {/* Settings gear */}
-              <div className="flex items-center justify-end px-4 pt-2.5">
+              {/* Settings & About */}
+              <div className="flex items-center justify-end gap-1 px-4 pt-2.5">
                 <button
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
+                  onClick={() => { setShowAbout(!showAbout); setShowSettings(false); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
+                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/>
+                    <path d="M12 8h.01"/>
+                  </svg>
+                </button>
+                <button
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -304,7 +325,7 @@ export default function Home() {
               {/* Focus Pal + Music */}
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
-                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); }}
+                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -313,7 +334,7 @@ export default function Home() {
                 </button>
 
                 <button
-                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); }}
+                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -472,6 +493,57 @@ export default function Home() {
                             {p.icon}
                           </button>
                         ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {showAbout && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-4 mb-3 text-center" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      <div className="text-2xl mb-1">{pal.icon}</div>
+                      <div className="text-sm font-semibold text-white">meow</div>
+                      <div className="text-[11px] text-text-muted mt-0.5">v1.0.0</div>
+                      <p className="text-[11px] text-text-muted mt-2 leading-relaxed">
+                        Focus mode. Made delightful.<br />
+                        Ambient sounds, a timer, and an adorable companion — tucked into your menu bar.
+                      </p>
+                      <div className="flex items-center justify-center gap-3 mt-3">
+                        <button
+                          onClick={() => { tauriBridge.openUrl('https://github.com/sajdakabir/meow'); tauriBridge.close(); }}
+                          className="no-drag text-[11px] text-accent-light hover:underline cursor-pointer bg-transparent border-none"
+                        >
+                          GitHub
+                        </button>
+                        <span className="text-text-muted text-[10px]">·</span>
+                        <button
+                          onClick={() => { tauriBridge.openUrl('https://github.com/sajdakabir/meow/releases/latest'); tauriBridge.close(); }}
+                          className="no-drag text-[11px] text-accent-light hover:underline cursor-pointer bg-transparent border-none"
+                        >
+                          Releases
+                        </button>
+                        <span className="text-text-muted text-[10px]">·</span>
+                        <button
+                          onClick={() => { tauriBridge.openUrl('https://github.com/sajdakabir/meow/issues'); tauriBridge.close(); }}
+                          className="no-drag text-[11px] text-accent-light hover:underline cursor-pointer bg-transparent border-none"
+                        >
+                          Report a Bug
+                        </button>
+                        <span className="text-text-muted text-[10px]">·</span>
+                        <button
+                          onClick={() => { tauriBridge.openUrl('https://buymeacoffee.com/sajdakabir'); tauriBridge.close(); }}
+                          className="no-drag text-[11px] text-accent-light hover:underline cursor-pointer bg-transparent border-none"
+                        >
+                          Support
+                        </button>
+                      </div>
+                      <div className="text-[10px] text-text-muted mt-3">
+                        Made with care by sajdakabir
                       </div>
                     </div>
                   </motion.div>

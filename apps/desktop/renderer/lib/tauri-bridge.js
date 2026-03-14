@@ -75,5 +75,18 @@ export const tauriBridge = {
     return () => {};
   },
 
+  openUrl: async (url) => {
+    const t = getTauri();
+    if (t) {
+      try {
+        await t.core.invoke('plugin:opener|open_url', { url });
+      } catch {
+        window.open(url, '_blank');
+      }
+    } else {
+      window.open(url, '_blank');
+    }
+  },
+
   getTauri,
 };

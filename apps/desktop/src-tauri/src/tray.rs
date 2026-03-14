@@ -1,7 +1,7 @@
 use tauri::{
     image::Image,
     menu::{MenuBuilder, MenuItemBuilder},
-    tray::TrayIconBuilder,
+    tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState},
     Emitter, Manager,
 };
 
@@ -15,7 +15,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let settings = MenuItemBuilder::with_id("settings", "Settings...")
         .accelerator("CommandOrControl+,")
         .build(app)?;
-    let check_updates = MenuItemBuilder::with_id("check_updates", "Check for Updates...")
+    let about = MenuItemBuilder::with_id("about", "About meow")
         .build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit meow")
         .accelerator("CommandOrControl+Q")
@@ -25,8 +25,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .item(&start_timer)
         .separator()
         .item(&settings)
-        .separator()
-        .item(&check_updates)
+        .item(&about)
         .separator()
         .item(&quit)
         .build()?;
@@ -36,7 +35,12 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .icon_as_template(true)
         .tooltip("meow")
         .menu(&menu)
-        .show_menu_on_left_click(true)
+        .show_menu_on_left_click(false)
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. } = event {
+                let _ = crate::windows::toggle_popover(tray.app_handle());
+            }
+        })
         .on_menu_event(|app, event| match event.id().as_ref() {
             "start_focus" => {
                 let _ = crate::windows::show_popover(app, true);
@@ -50,8 +54,11 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     let _ = w.emit("open-settings", ());
                 }
             }
-            "check_updates" => {
-                // TODO: implement update check
+            "about" => {
+                let _ = crate::windows::show_popover(app, true);
+                if let Some(w) = app.get_webview_window("popover") {
+                    let _ = w.emit("open-about", ());
+                }
             }
             "quit" => {
                 app.exit(0);
