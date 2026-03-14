@@ -48,16 +48,17 @@
     },
     "files": [
       "main/**/*",
-      "renderer/.next/standalone/**/*",
+      "renderer/out/**/*",
       "renderer/public/**/*"
     ],
     "mac": {
       "target": "dmg",
-      "icon": "renderer/public/icon.png"
+      "icon": "renderer/public/image.png",
+      "identity": null
     },
     "win": {
       "target": "nsis",
-      "icon": "renderer/public/icon.png"
+      "icon": "renderer/public/image.png"
     }
   }
 }
