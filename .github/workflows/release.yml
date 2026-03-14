@@ -43,3 +43,12 @@ jobs:
           generate_release_notes: true
           files: |
             apps/desktop/dist/*.dmg
+          body: |
+            ## Install on macOS
+
+            1. Download the `.dmg` file below
+            2. Open the `.dmg` and drag **meow** to Applications
+            3. **Important:** Since the app is not code-signed, macOS will block it on first launch
+               - Right-click the app → click **Open**
+               - Or go to **System Settings → Privacy & Security** → click **Open Anyway**
+            4. meow will appear on your MacBook's notch — hover to expand!
