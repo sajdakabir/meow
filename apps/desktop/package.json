@@ -54,12 +54,12 @@
     ],
     "mac": {
       "target": "dmg",
-      "icon": "renderer/public/image.png",
+      "icon": "renderer/public/icon-512.png",
       "identity": null
     },
     "win": {
       "target": "nsis",
-      "icon": "renderer/public/image.png"
+      "icon": "renderer/public/icon-512.png"
     }
   }
 }

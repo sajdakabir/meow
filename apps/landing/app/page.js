@@ -727,7 +727,6 @@ export default function Home() {
                 <li><a href="https://buymeacoffee.com/sajdakabir" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Buy Me a Coffee</a></li>
                 <li><a href="https://github.com/sajdakabir/meow/issues" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Report a Bug</a></li>
                 <li><a href="https://github.com/sajdakabir/meow/discussions" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Discussions</a></li>
-                <li><a href="https://github.com/sajdakabir/meow#readme" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Documentation</a></li>
               </ul>
             </div>
 
