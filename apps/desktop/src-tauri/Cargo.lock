@@ -5441,7 +5441,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "zen-focus"
+name = "meow"
 version = "1.0.0"
 dependencies = [
  "cocoa",

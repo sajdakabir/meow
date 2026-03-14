@@ -1,10 +1,10 @@
 [package]
-name = "zen-focus"
+name = "meow"
 version = "1.0.0"
 edition = "2021"
 
 [lib]
-name = "zen_focus_lib"
+name = "meow_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

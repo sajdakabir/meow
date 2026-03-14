@@ -41,8 +41,8 @@
     "react-dom": "^19.2.4"
   },
   "build": {
-    "appId": "com.zenfocus.app",
-    "productName": "Zen Focus",
+    "appId": "com.meow.app",
+    "productName": "meow",
     "electronVersion": "33.4.11",
     "directories": {
       "output": "dist"

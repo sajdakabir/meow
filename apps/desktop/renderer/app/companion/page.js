@@ -56,7 +56,7 @@ export default function Companion() {
   useEffect(() => {
     // Read selected pal from localStorage
     try {
-      const saved = localStorage.getItem('zen-focus-pal');
+      const saved = localStorage.getItem('meow-pal');
       if (saved !== null) {
         const idx = parseInt(saved, 10);
         if (PAL_IDS[idx]) setPalId(PAL_IDS[idx]);
@@ -66,7 +66,7 @@ export default function Companion() {
     // Poll for changes (since companion is a separate window)
     const interval = setInterval(() => {
       try {
-        const saved = localStorage.getItem('zen-focus-pal');
+        const saved = localStorage.getItem('meow-pal');
         if (saved !== null) {
           const idx = parseInt(saved, 10);
           if (PAL_IDS[idx]) setPalId(PAL_IDS[idx]);

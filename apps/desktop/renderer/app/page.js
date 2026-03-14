@@ -36,19 +36,19 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('zen-focus-settings');
+      const saved = localStorage.getItem('meow-settings');
       if (saved) setSettings(JSON.parse(saved));
-      const savedPal = localStorage.getItem('zen-focus-pal');
+      const savedPal = localStorage.getItem('meow-pal');
       if (savedPal) setSelectedPal(parseInt(savedPal, 10));
     } catch {}
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem('zen-focus-settings', JSON.stringify(settings)); } catch {}
+    try { localStorage.setItem('meow-settings', JSON.stringify(settings)); } catch {}
   }, [settings]);
 
   useEffect(() => {
-    try { localStorage.setItem('zen-focus-pal', String(selectedPal)); } catch {}
+    try { localStorage.setItem('meow-pal', String(selectedPal)); } catch {}
   }, [selectedPal]);
 
   useEffect(() => {

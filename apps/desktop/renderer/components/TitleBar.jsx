@@ -22,7 +22,7 @@ export default function TitleBar({ onMinimize, onClose }) {
       {/* App title */}
       <div className="flex items-center gap-2">
         <span className="text-[11px] font-medium text-text-muted tracking-wide uppercase">
-          Zen Focus
+          meow
         </span>
       </div>
 

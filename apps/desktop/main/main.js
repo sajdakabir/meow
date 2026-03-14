@@ -306,7 +306,7 @@ function createTray() {
   }
 
   tray = new Tray(trayIcon);
-  tray.setToolTip('Zen Focus');
+  tray.setToolTip('meow');
 
   tray.on('click', () => togglePopover());
 
@@ -337,7 +337,7 @@ function createTray() {
       },
       { type: 'separator' },
       {
-        label: 'Quit Zen Focus',
+        label: 'Quit meow',
         accelerator: 'CommandOrControl+Q',
         click: () => {
           isQuitting = true;
