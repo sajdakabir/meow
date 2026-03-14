@@ -2068,6 +2068,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "meow"
+version = "1.0.0"
+dependencies = [
+ "cocoa",
+ "core-graphics",
+ "log",
+ "objc",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-global-shortcut",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5438,23 +5455,6 @@ dependencies = [
  "serde",
  "winnow 0.7.14",
  "zvariant",
-]
-
-[[package]]
-name = "meow"
-version = "1.0.0"
-dependencies = [
- "cocoa",
- "core-graphics",
- "log",
- "objc",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-global-shortcut",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
 ]
 
 [[package]]

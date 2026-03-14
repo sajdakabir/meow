@@ -39,7 +39,7 @@ jobs:
           APPLE_SIGNING_IDENTITY: "-"
         with:
           projectPath: apps/desktop
-          tauriScript: npx tauri
+          tauriScript: npm run tauri
 
       - name: Find DMG
         id: find-dmg
