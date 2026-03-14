@@ -43,6 +43,7 @@
   "build": {
     "appId": "com.zenfocus.app",
     "productName": "Zen Focus",
+    "electronVersion": "33.4.11",
     "directories": {
       "output": "dist"
     },
