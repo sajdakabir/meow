@@ -19,7 +19,7 @@ export function useAudio() {
   const [isPaused, setIsPaused] = useState(false);
   const howlsRef = useRef({});
 
-  const loadSound = useCallback((soundId) => {
+  const loadSound = useCallback((soundId, vol, master) => {
     if (howlsRef.current[soundId]) return howlsRef.current[soundId];
 
     // Dynamic import of Howler since it needs the browser
@@ -30,13 +30,13 @@ export function useAudio() {
     const howl = new Howl({
       src: [sound.file],
       loop: true,
-      volume: (volumes[soundId] || 0.5) * masterVolume,
-      html5: true,
+      volume: (vol || 0.5) * master,
+      preload: true,
     });
 
     howlsRef.current[soundId] = howl;
     return howl;
-  }, [volumes, masterVolume]);
+  }, []);
 
   const toggleSound = useCallback((soundId) => {
     setActiveSounds((prev) => {
@@ -47,16 +47,19 @@ export function useAudio() {
           howlsRef.current[soundId].fade(howlsRef.current[soundId].volume(), 0, 500);
           setTimeout(() => {
             howlsRef.current[soundId]?.stop();
+            howlsRef.current[soundId]?.unload();
+            delete howlsRef.current[soundId];
           }, 500);
         }
         delete next[soundId];
       } else {
         // Start sound
-        const howl = loadSound(soundId);
+        const vol = volumes[soundId] || 0.5;
+        const howl = loadSound(soundId, vol, masterVolume);
         if (howl) {
           howl.volume(0);
           howl.play();
-          howl.fade(0, (volumes[soundId] || 0.5) * masterVolume, 500);
+          howl.fade(0, vol * masterVolume, 500);
           next[soundId] = true;
         }
       }

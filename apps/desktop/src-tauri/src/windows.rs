@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -7,6 +7,10 @@ use tauri::{AppHandle, Emitter, Manager};
 pub static POPOVER_VISIBLE: AtomicBool = AtomicBool::new(false);
 static OUTSIDE_COUNT: Mutex<u32> = Mutex::new(0);
 const OUTSIDE_THRESHOLD: u32 = 3; // ~240ms detect + 200ms animation = snappy collapse
+
+/// Timestamp (ms since epoch) of last expand — used to prevent immediate re-collapse.
+static LAST_EXPAND_MS: AtomicU64 = AtomicU64::new(0);
+const EXPAND_COOLDOWN_MS: u64 = 500;
 
 const COLLAPSED_WIDTH: f64 = 300.0; // wider than notch so content sits on both wings
 const EXPANDED_WIDTH: f64 = 350.0;
@@ -58,6 +62,13 @@ fn center_popover(handle: &AppHandle, width: f64) -> Result<(), Box<dyn std::err
 /// Expand the popover card. Emits "popover-expand" to the frontend.
 pub fn show_popover(handle: &AppHandle, focus: bool) -> Result<(), Box<dyn std::error::Error>> {
     reset_outside_count();
+
+    // Record expand time for cooldown
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64;
+    LAST_EXPAND_MS.store(now, Ordering::SeqCst);
 
     if let Some(win) = handle.get_webview_window("popover") {
         // Widen to expanded size and re-center
@@ -119,4 +130,14 @@ pub fn increment_outside() -> bool {
 
 pub fn reset_outside_count() {
     *OUTSIDE_COUNT.lock().unwrap() = 0;
+}
+
+/// Returns true if enough time has passed since the last expand to allow collapse.
+pub fn expand_cooldown_elapsed() -> bool {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as u64;
+    let last = LAST_EXPAND_MS.load(Ordering::SeqCst);
+    now.saturating_sub(last) >= EXPAND_COOLDOWN_MS
 }

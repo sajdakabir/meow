@@ -70,7 +70,7 @@ pub fn start(handle: AppHandle) {
             }
 
             // ── Auto-collapse when cursor leaves expanded popover ──
-            if is_expanded {
+            if is_expanded && windows::expand_cooldown_elapsed() {
                 let in_popover = if let Some(win) = handle.get_webview_window("popover") {
                     match (win.outer_position(), win.inner_size()) {
                         (Ok(pos), Ok(size)) => {
