@@ -36,7 +36,8 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/tray-icon.png"
+      "icons/app-icon.png",
+      "icons/icon.icns"
     ],
     "resources": [
       "icons/tray-icon.png"
