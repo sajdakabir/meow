@@ -339,9 +339,17 @@ export default function Home() {
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
                   <span className="text-sm text-text-secondary font-medium">Music</span>
-                  <span className={`text-[11px] font-bold ml-auto px-2 py-0.5 rounded-md ${
-                    activeCount > 0 ? 'bg-accent/20 text-accent-light' : 'text-text-muted'
-                  }`} style={activeCount > 0 ? {} : { background: '#3a3a3c' }}>
+                  <span
+                    onClick={(e) => {
+                      if (activeCount > 0) {
+                        e.stopPropagation();
+                        audio.stopAll();
+                      }
+                    }}
+                    className={`text-[11px] font-bold ml-auto px-2 py-0.5 rounded-md ${
+                      activeCount > 0 ? 'bg-accent/20 text-accent-light cursor-pointer' : 'text-text-muted'
+                    }`} style={activeCount > 0 ? {} : { background: '#3a3a3c' }}
+                  >
                     {activeCount > 0 ? 'ON' : 'OFF'}
                   </span>
                 </button>

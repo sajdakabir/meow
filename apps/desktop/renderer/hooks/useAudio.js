@@ -22,7 +22,6 @@ export function useAudio() {
   const loadSound = useCallback((soundId, vol, master) => {
     if (howlsRef.current[soundId]) return howlsRef.current[soundId];
 
-    // Dynamic import of Howler since it needs the browser
     const { Howl } = require('howler');
     const sound = AMBIENT_SOUNDS.find((s) => s.id === soundId);
     if (!sound) return null;
@@ -31,7 +30,26 @@ export function useAudio() {
       src: [sound.file],
       loop: true,
       volume: (vol || 0.5) * master,
+      html5: true,
       preload: true,
+    });
+
+    // html5 audio can fail to loop — force restart on end
+    howl.on('end', () => {
+      if (howlsRef.current[soundId]) {
+        howl.play();
+      }
+    });
+
+    // If audio pauses unexpectedly (browser throttling), resume it
+    howl.on('pause', () => {
+      if (howlsRef.current[soundId] && !howl._manualPause) {
+        setTimeout(() => {
+          if (howlsRef.current[soundId] && !howl._manualPause) {
+            howl.play();
+          }
+        }, 100);
+      }
     });
 
     howlsRef.current[soundId] = howl;
@@ -42,21 +60,22 @@ export function useAudio() {
     setActiveSounds((prev) => {
       const next = { ...prev };
       if (next[soundId]) {
-        // Stop sound
         if (howlsRef.current[soundId]) {
-          howlsRef.current[soundId].fade(howlsRef.current[soundId].volume(), 0, 500);
+          const h = howlsRef.current[soundId];
+          h._manualPause = true;
+          h.fade(h.volume(), 0, 500);
           setTimeout(() => {
-            howlsRef.current[soundId]?.stop();
-            howlsRef.current[soundId]?.unload();
+            h.stop();
+            h.unload();
             delete howlsRef.current[soundId];
           }, 500);
         }
         delete next[soundId];
       } else {
-        // Start sound
         const vol = volumes[soundId] || 0.5;
         const howl = loadSound(soundId, vol, masterVolume);
         if (howl) {
+          howl._manualPause = false;
           howl.volume(0);
           howl.play();
           howl.fade(0, vol * masterVolume, 500);
@@ -86,6 +105,7 @@ export function useAudio() {
   const pauseAll = useCallback(() => {
     Object.keys(activeSounds).forEach((soundId) => {
       if (howlsRef.current[soundId]) {
+        howlsRef.current[soundId]._manualPause = true;
         howlsRef.current[soundId].pause();
       }
     });
@@ -95,6 +115,7 @@ export function useAudio() {
   const resumeAll = useCallback(() => {
     Object.keys(activeSounds).forEach((soundId) => {
       if (howlsRef.current[soundId]) {
+        howlsRef.current[soundId]._manualPause = false;
         howlsRef.current[soundId].play();
       }
     });
@@ -103,6 +124,7 @@ export function useAudio() {
 
   const stopAll = useCallback(() => {
     Object.keys(howlsRef.current).forEach((soundId) => {
+      howlsRef.current[soundId]._manualPause = true;
       howlsRef.current[soundId]?.stop();
       howlsRef.current[soundId]?.unload();
     });
@@ -115,6 +137,7 @@ export function useAudio() {
   useEffect(() => {
     return () => {
       Object.values(howlsRef.current).forEach((howl) => {
+        howl._manualPause = true;
         howl?.stop();
         howl?.unload();
       });
