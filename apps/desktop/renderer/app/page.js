@@ -16,36 +16,29 @@ const PALS = [
 
 export default function Home() {
   const [expanded, setExpanded] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
-  const [settings, setSettings] = useState({
-    workMinutes: 25,
-    shortBreakMinutes: 5,
-    longBreakMinutes: 15,
-    autoStartBreaks: false,
-    autoStartWork: false,
-  });
+  const [timerMinutes, setTimerMinutes] = useState(25);
   const containerRef = useRef(null);
   const isCollapsingRef = useRef(false);
   const lastHeightRef = useRef(0);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('meow-settings');
-      if (saved) setSettings(JSON.parse(saved));
+      const saved = localStorage.getItem('meow-minutes');
+      if (saved) setTimerMinutes(parseInt(saved, 10));
       const savedPal = localStorage.getItem('meow-pal');
       if (savedPal) setSelectedPal(parseInt(savedPal, 10));
     } catch {}
   }, []);
 
   useEffect(() => {
-    try { localStorage.setItem('meow-settings', JSON.stringify(settings)); } catch {}
-  }, [settings]);
+    try { localStorage.setItem('meow-minutes', String(timerMinutes)); } catch {}
+  }, [timerMinutes]);
 
   useEffect(() => {
     try { localStorage.setItem('meow-pal', String(selectedPal)); } catch {}
@@ -92,24 +85,19 @@ export default function Home() {
     } catch {}
   }, []);
 
-  const handleTimerComplete = useCallback((mode, sessions) => {
+  const handleTimerComplete = useCallback((sessions) => {
     playChime();
-    if (mode === 'work') {
-      tauriBridge.showNotification(
-        'Focus complete!',
-        `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`
-      );
-    } else {
-      tauriBridge.showNotification('Break over!', 'Ready to focus again?');
-    }
+    tauriBridge.showNotification(
+      'Timer done!',
+      `${sessions} session${sessions > 1 ? 's' : ''} completed.`
+    );
   }, [playChime]);
 
-  const timer = useTimer({ ...settings, onComplete: handleTimerComplete });
+  const timer = useTimer({ minutes: timerMinutes, onComplete: handleTimerComplete });
   const audio = useAudio();
 
   const activeCount = Object.keys(audio.activeSounds).length;
   const pal = PALS[selectedPal];
-  const isBreak = timer.mode !== 'work';
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -119,18 +107,10 @@ export default function Home() {
       unlisteners.push(await tauriBridge.onStartFocus(() => { timer.start(); setExpanded(true); }));
       unlisteners.push(await tauriBridge.onPause(() => timer.pause()));
       unlisteners.push(await tauriBridge.onReset(() => timer.reset()));
-      unlisteners.push(await tauriBridge.onOpenSettings(() => {
-        setExpanded(true);
-        setShowSettings(true);
-        setShowSounds(false);
-        setShowPalPicker(false);
-        setShowAbout(false);
-      }));
       unlisteners.push(await tauriBridge.on('open-about', () => {
         setExpanded(true);
         setShowAbout(true);
-        setShowSettings(false);
-        setShowSounds(false);
+               setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
       }));
@@ -142,8 +122,7 @@ export default function Home() {
       unlisteners.push(await tauriBridge.on('popover-collapse', () => {
         isCollapsingRef.current = true;
         setExpanded(false);
-        setShowSettings(false);
-        setShowSounds(false);
+               setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
         setShowAbout(false);
@@ -226,15 +205,6 @@ export default function Home() {
                     <path d="M12 8h.01"/>
                   </svg>
                 </button>
-                <button
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
-                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
               </div>
 
               {/* Timer row */}
@@ -248,8 +218,7 @@ export default function Home() {
                     onClick={() => {
                       if (!timer.isRunning) {
                         setShowTimerPicker(!showTimerPicker);
-                        setShowSettings(false);
-                        setShowSounds(false);
+                                               setShowSounds(false);
                         setShowPalPicker(false);
                       }
                     }}
@@ -267,13 +236,13 @@ export default function Home() {
                     )}
                   </button>
 
-                  {/* Center: task name while running, editable input when idle */}
+                  {/* Center: task name */}
                   <div className="flex-1 text-center min-w-0">
                     {timer.isRunning ? (
                       <span className="text-text-muted text-sm truncate block">
-                        {taskName || (timer.mode === 'shortBreak' ? 'Short Break' : timer.mode === 'longBreak' ? 'Long Break' : '')}
+                        {taskName || ''}
                       </span>
-                    ) : timer.mode === 'work' ? (
+                    ) : (
                       <input
                         type="text"
                         value={taskName}
@@ -282,10 +251,6 @@ export default function Home() {
                         onMouseDown={() => tauriBridge.focusWindow()}
                         className="no-drag w-full bg-transparent text-center text-text-muted text-sm outline-none placeholder:text-text-muted"
                       />
-                    ) : (
-                      <span className="text-text-muted text-sm">
-                        {timer.mode === 'shortBreak' ? 'Short Break' : 'Long Break'}
-                      </span>
                     )}
                   </div>
 
@@ -370,15 +335,16 @@ export default function Home() {
                           <button
                             key={min}
                             onClick={() => {
-                              setSettings(p => ({ ...p, workMinutes: min }));
+                              setTimerMinutes(min);
+                              timer.setDuration(min);
                               setShowTimerPicker(false);
                             }}
                             className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
-                              settings.workMinutes === min
+                              timerMinutes === min
                                 ? 'bg-white/20 text-white ring-1 ring-white/30'
                                 : 'text-text-secondary hover:bg-white/10'
                             }`}
-                            style={{ background: settings.workMinutes === min ? undefined : '#3a3a3c' }}
+                            style={{ background: timerMinutes === min ? undefined : '#3a3a3c' }}
                           >
                             {min}
                           </button>
@@ -388,50 +354,6 @@ export default function Home() {
                   </motion.div>
                 )}
 
-                {showSettings && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden px-4"
-                  >
-                    <div className="p-4 mb-3 space-y-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
-                      <div className="text-xs text-text-muted font-medium uppercase tracking-wider">Timer Settings</div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { key: 'workMinutes', label: 'Focus', val: settings.workMinutes },
-                          { key: 'shortBreakMinutes', label: 'Short', val: settings.shortBreakMinutes },
-                          { key: 'longBreakMinutes', label: 'Long', val: settings.longBreakMinutes },
-                        ].map(s => (
-                          <div key={s.key} className="text-center">
-                            <div className="text-[10px] text-text-muted mb-1">{s.label}</div>
-                            <div className="flex items-center justify-center gap-1 px-2 py-1" style={{ background: '#1c1c1e', borderRadius: 10 }}>
-                              <button onClick={() => setSettings(p => ({...p, [s.key]: Math.max(1, p[s.key] - 5)}))}
-                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">{'\u2212'}</button>
-                              <span className="text-sm font-medium text-text-primary w-6 text-center">{s.val}</span>
-                              <button onClick={() => setSettings(p => ({...p, [s.key]: Math.min(120, p[s.key] + 5)}))}
-                                className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">+</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="space-y-2 pt-1">
-                        {[
-                          { key: 'autoStartBreaks', label: 'Auto-start breaks', val: settings.autoStartBreaks },
-                          { key: 'autoStartWork', label: 'Auto-start focus', val: settings.autoStartWork },
-                        ].map(s => (
-                          <div key={s.key} className="flex items-center justify-between">
-                            <span className="text-xs text-text-secondary">{s.label}</span>
-                            <button onClick={() => setSettings(p => ({...p, [s.key]: !p[s.key]}))}
-                              className={`no-drag w-8 h-[18px] rounded-full relative transition-colors cursor-pointer ${s.val ? 'bg-accent' : 'bg-border'}`}>
-                              <div className={`w-3.5 h-3.5 rounded-full bg-white absolute top-[2px] transition-all ${s.val ? 'left-[16px]' : 'left-[2px]'}`}/>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
 
                 {showSounds && (
                   <motion.div
