@@ -16,6 +16,7 @@ const PALS = [
 
 export default function Home() {
   const [expanded, setExpanded] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showSounds, setShowSounds] = useState(false);
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
@@ -23,6 +24,12 @@ export default function Home() {
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
+  const [pomodoroMode, setPomodoroMode] = useState(false);
+  const [pomodoroSettings, setPomodoroSettings] = useState({
+    workMinutes: 25,
+    shortBreakMinutes: 5,
+    longBreakMinutes: 15,
+  });
   const containerRef = useRef(null);
   const isCollapsingRef = useRef(false);
   const lastHeightRef = useRef(0);
@@ -33,12 +40,24 @@ export default function Home() {
       if (saved) setTimerMinutes(parseInt(saved, 10));
       const savedPal = localStorage.getItem('meow-pal');
       if (savedPal) setSelectedPal(parseInt(savedPal, 10));
+      const savedPomo = localStorage.getItem('meow-pomodoro');
+      if (savedPomo) setPomodoroMode(savedPomo === 'true');
+      const savedPomoSettings = localStorage.getItem('meow-pomodoro-settings');
+      if (savedPomoSettings) setPomodoroSettings(JSON.parse(savedPomoSettings));
     } catch {}
   }, []);
 
   useEffect(() => {
     try { localStorage.setItem('meow-minutes', String(timerMinutes)); } catch {}
   }, [timerMinutes]);
+
+  useEffect(() => {
+    try { localStorage.setItem('meow-pomodoro', String(pomodoroMode)); } catch {}
+  }, [pomodoroMode]);
+
+  useEffect(() => {
+    try { localStorage.setItem('meow-pomodoro-settings', JSON.stringify(pomodoroSettings)); } catch {}
+  }, [pomodoroSettings]);
 
   useEffect(() => {
     try { localStorage.setItem('meow-pal', String(selectedPal)); } catch {}
@@ -65,35 +84,73 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  const audioCtxRef = useRef(null);
+
+  // Pre-warm AudioContext on first user interaction
+  useEffect(() => {
+    const warmUp = () => {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioContext();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume();
+      }
+    };
+    window.addEventListener('click', warmUp, { once: true });
+    return () => window.removeEventListener('click', warmUp);
+  }, []);
+
   const playChime = useCallback(() => {
     try {
-      const ctx = new AudioContext();
-      // Three-note ascending chime: C5 → E5 → G5
-      [[523.25, 0], [659.25, 0.18], [783.99, 0.36]].forEach(([freq, when]) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, ctx.currentTime + when);
-        gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + when + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.8);
-        osc.start(ctx.currentTime + when);
-        osc.stop(ctx.currentTime + when + 0.85);
-      });
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioContext();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') ctx.resume();
+
+      // Three-note ascending chime: C5 → E5 → G5, played twice for emphasis
+      const playOnce = (delay) => {
+        [[523.25, 0], [659.25, 0.18], [783.99, 0.36]].forEach(([freq, when]) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          const t = ctx.currentTime + delay + when;
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(0.5, t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+          osc.start(t);
+          osc.stop(t + 0.95);
+        });
+      };
+      playOnce(0);
+      playOnce(0.7); // repeat for emphasis
     } catch {}
   }, []);
 
-  const handleTimerComplete = useCallback((sessions) => {
+  const handleTimerComplete = useCallback((...args) => {
     playChime();
-    tauriBridge.showNotification(
-      'Timer done!',
-      `${sessions} session${sessions > 1 ? 's' : ''} completed.`
-    );
-  }, [playChime]);
+    if (pomodoroMode) {
+      const [mode, sessions] = args;
+      if (mode === 'work') {
+        tauriBridge.showNotification('Focus complete!', `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`);
+      } else {
+        tauriBridge.showNotification('Break over!', 'Ready to focus again?');
+      }
+    } else {
+      const sessions = args[0];
+      tauriBridge.showNotification('Timer done!', `${sessions} session${sessions > 1 ? 's' : ''} completed.`);
+    }
+  }, [playChime, pomodoroMode]);
 
-  const timer = useTimer({ minutes: timerMinutes, onComplete: handleTimerComplete });
+  const timer = useTimer({
+    minutes: timerMinutes,
+    pomodoroMode,
+    ...pomodoroSettings,
+    onComplete: handleTimerComplete,
+  });
   const audio = useAudio();
 
   const activeCount = Object.keys(audio.activeSounds).length;
@@ -122,7 +179,8 @@ export default function Home() {
       unlisteners.push(await tauriBridge.on('popover-collapse', () => {
         isCollapsingRef.current = true;
         setExpanded(false);
-               setShowSounds(false);
+        setShowSettings(false);
+        setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
         setShowAbout(false);
@@ -205,6 +263,15 @@ export default function Home() {
                     <path d="M12 8h.01"/>
                   </svg>
                 </button>
+                <button
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
               </div>
 
               {/* Timer row */}
@@ -236,12 +303,14 @@ export default function Home() {
                     )}
                   </button>
 
-                  {/* Center: task name */}
+                  {/* Center: task name or break label */}
                   <div className="flex-1 text-center min-w-0">
                     {timer.isRunning ? (
                       <span className="text-text-muted text-sm truncate block">
-                        {taskName || ''}
+                        {taskName || timer.modeLabel || ''}
                       </span>
+                    ) : pomodoroMode && timer.mode !== 'work' ? (
+                      <span className="text-text-muted text-sm">{timer.modeLabel}</span>
                     ) : (
                       <input
                         type="text"
@@ -354,6 +423,64 @@ export default function Home() {
                   </motion.div>
                 )}
 
+
+                {showSettings && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-4 mb-3 space-y-3" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      {/* Mode toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-text-secondary">Timer Mode</span>
+                        <div className="flex rounded-lg overflow-hidden" style={{ background: '#1c1c1e' }}>
+                          <button
+                            onClick={() => setPomodoroMode(false)}
+                            className={`no-drag px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer ${
+                              !pomodoroMode ? 'bg-white/15 text-white' : 'text-text-muted hover:text-text-secondary'
+                            }`}
+                          >
+                            Simple
+                          </button>
+                          <button
+                            onClick={() => setPomodoroMode(true)}
+                            className={`no-drag px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer ${
+                              pomodoroMode ? 'bg-white/15 text-white' : 'text-text-muted hover:text-text-secondary'
+                            }`}
+                          >
+                            Pomodoro
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Pomodoro settings — only show when pomodoro mode is on */}
+                      {pomodoroMode && (
+                        <div className="space-y-2 pt-1">
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { key: 'workMinutes', label: 'Focus' },
+                              { key: 'shortBreakMinutes', label: 'Short Break' },
+                              { key: 'longBreakMinutes', label: 'Long Break' },
+                            ].map(s => (
+                              <div key={s.key} className="text-center">
+                                <div className="text-[10px] text-text-muted mb-1">{s.label}</div>
+                                <div className="flex items-center justify-center gap-1 px-2 py-1" style={{ background: '#1c1c1e', borderRadius: 10 }}>
+                                  <button onClick={() => setPomodoroSettings(p => ({...p, [s.key]: Math.max(1, p[s.key] - 5)}))}
+                                    className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">{'\u2212'}</button>
+                                  <span className="text-sm font-medium text-text-primary w-6 text-center">{pomodoroSettings[s.key]}</span>
+                                  <button onClick={() => setPomodoroSettings(p => ({...p, [s.key]: Math.min(120, p[s.key] + 5)}))}
+                                    className="no-drag text-text-muted hover:text-text-primary text-xs w-5 cursor-pointer">+</button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
 
                 {showSounds && (
                   <motion.div
