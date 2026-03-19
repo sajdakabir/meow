@@ -4,6 +4,10 @@ export const metadata = {
   title: 'meow — Stay focused. Stay cozy.',
   description:
     'A little menu-bar app that pairs ambient sounds with a pomodoro timer and a furry friend.',
+  icons: {
+    icon: '/image.png',
+    apple: '/image.png',
+  },
 };
 
 export default function RootLayout({ children }) {
