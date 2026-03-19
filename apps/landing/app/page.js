@@ -90,7 +90,7 @@ const FEATURES = [
 
 const TESTIMONIALS = [
   { text: 'meow turned my chaotic work sessions into something I actually look forward to.', author: 'Sarah K.', role: 'Designer' },
-  { text: 'The ambient sounds + timer combo is perfection. I\'ve never been this productive.', author: 'Alex M.', role: 'Developer' },
+  { text: 'Love that everything runs locally — perfect setup for someone who doesn\'t like sharing data. Awesome work, bro.', author: 'Paras Chugani', role: 'CTO, Superu' },
   { text: 'So simple, so beautiful. It just sits in my menu bar and does its job perfectly.', author: 'Oliur Sahin', role: 'Founder' },
 ];
 
@@ -446,11 +446,19 @@ function FeatureCard({ icon, title, desc, index }) {
   );
 }
 
-// ── Testimonial Card ──
+// ── Testimonial Card (draggable) ──
 function TestimonialCard({ text, author, role, index }) {
   return (
     <FadeIn delay={index * 0.1}>
-      <div className="bg-white rounded-2xl p-6 border border-gray-100 flex flex-col">
+      <motion.div
+        drag
+        dragConstraints={{ top: 0, left: 0, right: 0, bottom: 0 }}
+        dragElastic={0.15}
+        whileDrag={{ scale: 1.05, rotate: index % 2 === 0 ? 2 : -2, zIndex: 50 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="bg-white rounded-2xl p-6 border border-gray-100 flex flex-col cursor-grab active:cursor-grabbing select-none"
+      >
         <div className="flex gap-1 mb-4">
           {[...Array(5)].map((_, i) => (
             <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="none">
@@ -463,7 +471,7 @@ function TestimonialCard({ text, author, role, index }) {
           <p className="text-gray-900 text-sm font-medium">{author}</p>
           <p className="text-gray-400 text-xs">{role}</p>
         </div>
-      </div>
+      </motion.div>
     </FadeIn>
   );
 }
