@@ -130,10 +130,19 @@ export default function Home() {
     } catch {}
   }, []);
 
+  const saveHistory = useCallback((entry) => {
+    try {
+      const history = JSON.parse(localStorage.getItem('meow-history') || '[]');
+      history.unshift(entry);
+      localStorage.setItem('meow-history', JSON.stringify(history.slice(0, 100)));
+    } catch {}
+  }, []);
+
   const handleTimerComplete = useCallback((...args) => {
     playChime();
     if (pomodoroMode) {
       const [mode, sessions] = args;
+      saveHistory({ type: mode, duration: mode === 'work' ? pomodoroSettings.workMinutes : mode === 'shortBreak' ? pomodoroSettings.shortBreakMinutes : pomodoroSettings.longBreakMinutes, task: taskName, date: new Date().toISOString() });
       if (mode === 'work') {
         tauriBridge.showNotification('Focus complete!', `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`);
       } else {
@@ -141,9 +150,10 @@ export default function Home() {
       }
     } else {
       const sessions = args[0];
+      saveHistory({ type: 'focus', duration: timerMinutes, task: taskName, date: new Date().toISOString() });
       tauriBridge.showNotification('Timer done!', `${sessions} session${sessions > 1 ? 's' : ''} completed.`);
     }
-  }, [playChime, pomodoroMode]);
+  }, [playChime, pomodoroMode, pomodoroSettings, timerMinutes, taskName, saveHistory]);
 
   const timer = useTimer({
     minutes: timerMinutes,
