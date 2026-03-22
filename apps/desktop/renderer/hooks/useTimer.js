@@ -108,8 +108,19 @@ export function useTimer(settings = {}) {
   }, [stop, pomodoroMode, mode, minutes, workMinutes, shortBreakMinutes, longBreakMinutes]);
 
   // Update timeLeft when duration settings change (only when not running)
+  // Use a ref to track if we're just pausing vs actually changing settings
+  const prevSettingsRef = useRef({ minutes, workMinutes, shortBreakMinutes, longBreakMinutes, pomodoroMode });
   useEffect(() => {
-    if (!isRunning) {
+    const prev = prevSettingsRef.current;
+    const settingsChanged =
+      prev.minutes !== minutes ||
+      prev.workMinutes !== workMinutes ||
+      prev.shortBreakMinutes !== shortBreakMinutes ||
+      prev.longBreakMinutes !== longBreakMinutes ||
+      prev.pomodoroMode !== pomodoroMode;
+    prevSettingsRef.current = { minutes, workMinutes, shortBreakMinutes, longBreakMinutes, pomodoroMode };
+
+    if (!isRunning && settingsChanged) {
       if (pomodoroMode) {
         const dur = mode === 'work' ? workMinutes : mode === 'shortBreak' ? shortBreakMinutes : longBreakMinutes;
         setTimeLeft(dur * 60);

@@ -88,5 +88,41 @@ export const tauriBridge = {
     }
   },
 
+  getHistory: async () => {
+    const t = getTauri();
+    if (t) {
+      const data = await t.core.invoke('get_history');
+      return JSON.parse(data);
+    }
+    // Fallback for browser dev
+    try { return JSON.parse(localStorage.getItem('meow-history') || '[]'); } catch { return []; }
+  },
+
+  saveHistoryEntry: async (entry) => {
+    const t = getTauri();
+    if (t) {
+      const current = await t.core.invoke('get_history');
+      const history = JSON.parse(current);
+      history.unshift(entry);
+      await t.core.invoke('save_history', { data: JSON.stringify(history.slice(0, 100)) });
+    } else {
+      // Fallback for browser dev
+      try {
+        const history = JSON.parse(localStorage.getItem('meow-history') || '[]');
+        history.unshift(entry);
+        localStorage.setItem('meow-history', JSON.stringify(history.slice(0, 100)));
+      } catch {}
+    }
+  },
+
+  clearHistory: async () => {
+    const t = getTauri();
+    if (t) {
+      await t.core.invoke('clear_history');
+    } else {
+      try { localStorage.setItem('meow-history', '[]'); } catch {}
+    }
+  },
+
   getTauri,
 };

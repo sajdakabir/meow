@@ -63,6 +63,37 @@ pub async fn focus_window(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Get the path to the history JSON file in the app's data directory.
+fn history_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir.join("history.json"))
+}
+
+/// Read session history from disk.
+#[tauri::command]
+pub async fn get_history(app: AppHandle) -> Result<String, String> {
+    let path = history_path(&app)?;
+    match std::fs::read_to_string(&path) {
+        Ok(data) => Ok(data),
+        Err(_) => Ok("[]".to_string()),
+    }
+}
+
+/// Save session history to disk.
+#[tauri::command]
+pub async fn save_history(app: AppHandle, data: String) -> Result<(), String> {
+    let path = history_path(&app)?;
+    std::fs::write(&path, data).map_err(|e| e.to_string())
+}
+
+/// Clear session history.
+#[tauri::command]
+pub async fn clear_history(app: AppHandle) -> Result<(), String> {
+    let path = history_path(&app)?;
+    std::fs::write(&path, "[]").map_err(|e| e.to_string())
+}
+
 /// Register the global Cmd+Shift+F shortcut to toggle the popover.
 pub fn register_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);

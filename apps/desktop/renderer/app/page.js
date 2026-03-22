@@ -130,10 +130,15 @@ export default function Home() {
     } catch {}
   }, []);
 
+  const saveHistory = useCallback((entry) => {
+    tauriBridge.saveHistoryEntry(entry);
+  }, []);
+
   const handleTimerComplete = useCallback((...args) => {
     playChime();
     if (pomodoroMode) {
       const [mode, sessions] = args;
+      saveHistory({ type: mode, duration: mode === 'work' ? pomodoroSettings.workMinutes : mode === 'shortBreak' ? pomodoroSettings.shortBreakMinutes : pomodoroSettings.longBreakMinutes, task: taskName, pal: PALS[selectedPal].icon, date: new Date().toISOString() });
       if (mode === 'work') {
         tauriBridge.showNotification('Focus complete!', `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`);
       } else {
@@ -141,9 +146,10 @@ export default function Home() {
       }
     } else {
       const sessions = args[0];
+      saveHistory({ type: 'focus', duration: timerMinutes, task: taskName, pal: PALS[selectedPal].icon, date: new Date().toISOString() });
       tauriBridge.showNotification('Timer done!', `${sessions} session${sessions > 1 ? 's' : ''} completed.`);
     }
-  }, [playChime, pomodoroMode]);
+  }, [playChime, pomodoroMode, pomodoroSettings, timerMinutes, taskName, selectedPal, saveHistory]);
 
   const timer = useTimer({
     minutes: timerMinutes,
@@ -194,7 +200,7 @@ export default function Home() {
     };
   }, [timer.start, timer.pause, timer.reset]);
 
-  const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
+  const timerDisplay = timer.display;
 
   return (
     <div ref={containerRef} style={{ padding: expanded ? '6px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -264,6 +270,7 @@ export default function Home() {
                   </svg>
                 </button>
                 <button
+                  data-tour="settings-btn"
                   onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
@@ -289,6 +296,7 @@ export default function Home() {
                         setShowPalPicker(false);
                       }
                     }}
+                    data-tour="timer-pill"
                     className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors cursor-pointer"
                     style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
@@ -325,6 +333,7 @@ export default function Home() {
 
                   <div className="flex items-center gap-1.5">
                     <motion.button
+                      data-tour="play-btn"
                       whileTap={{ scale: 0.9 }}
                       onClick={timer.toggle}
                       className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
@@ -359,6 +368,7 @@ export default function Home() {
               {/* Focus Pal + Music */}
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
+                  data-tour="focus-pal"
                   onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
@@ -368,6 +378,7 @@ export default function Home() {
                 </button>
 
                 <button
+                  data-tour="music-btn"
                   onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
@@ -606,6 +617,7 @@ export default function Home() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
             </motion.div>
           )}
         </AnimatePresence>

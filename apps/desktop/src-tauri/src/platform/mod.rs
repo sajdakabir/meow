@@ -15,3 +15,6 @@ pub use macos::activate_app_for_input;
 
 #[cfg(target_os = "macos")]
 pub use macos::prevent_window_hiding;
+
+#[cfg(target_os = "macos")]
+pub use macos::hide_zoom_button;
