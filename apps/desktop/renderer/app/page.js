@@ -300,7 +300,7 @@ export default function Home() {
                     className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors cursor-pointer"
                     style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
-                    {timer.isRunning ? (
+                    {timer.isRunning || timer.timeLeft < timer.totalTime ? (
                       <span className="text-text-primary text-base tabular-nums tracking-wide">
                         {timer.display}
                       </span>
@@ -349,7 +349,7 @@ export default function Home() {
                         </svg>
                       )}
                     </motion.button>
-                    {timer.isRunning && (
+                    {(timer.isRunning || timer.timeLeft < timer.totalTime) && (
                       <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={timer.reset}
