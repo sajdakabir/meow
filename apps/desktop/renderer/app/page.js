@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
 import { tauriBridge } from '../lib/tauri-bridge';
+import Onboarding from '../components/Onboarding';
 
 // ── Focus Pals ──
 const PALS = [
@@ -21,6 +22,7 @@ export default function Home() {
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
@@ -44,6 +46,11 @@ export default function Home() {
       if (savedPomo) setPomodoroMode(savedPomo === 'true');
       const savedPomoSettings = localStorage.getItem('meow-pomodoro-settings');
       if (savedPomoSettings) setPomodoroSettings(JSON.parse(savedPomoSettings));
+      // Show onboarding on first launch
+      if (!localStorage.getItem('meow-onboarded')) {
+        setShowOnboarding(true);
+        setExpanded(true);
+      }
     } catch {}
   }, []);
 
@@ -256,6 +263,7 @@ export default function Home() {
             /* ── Expanded card ── */
             <motion.div
               key="expanded"
+              className="relative"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -614,6 +622,16 @@ export default function Home() {
                       </div>
                     </div>
                   </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Onboarding tour overlay */}
+              <AnimatePresence>
+                {showOnboarding && (
+                  <Onboarding onComplete={() => {
+                    setShowOnboarding(false);
+                    try { localStorage.setItem('meow-onboarded', 'true'); } catch {}
+                  }} />
                 )}
               </AnimatePresence>
             </motion.div>
