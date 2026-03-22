@@ -45,7 +45,8 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     )
                     .title("meow — History")
                     .inner_size(350.0, 350.0)
-                    .resizable(true)
+                    .resizable(false)
+                    .maximizable(false)
                     .decorations(true)
                     .center()
                     .build();
