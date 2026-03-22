@@ -44,7 +44,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                         tauri::WebviewUrl::App("history".into()),
                     )
                     .title("meow — History")
-                    .inner_size(320.0, 420.0)
+                    .inner_size(350.0, 350.0)
                     .resizable(true)
                     .decorations(true)
                     .center()
