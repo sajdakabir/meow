@@ -38,7 +38,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     let _ = win.set_focus();
                 } else {
                     // Create a new small window for history
-                    let _ = WebviewWindowBuilder::new(
+                    if let Ok(win) = WebviewWindowBuilder::new(
                         app,
                         "history",
                         tauri::WebviewUrl::App("history".into()),
@@ -49,7 +49,11 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                     .maximizable(false)
                     .decorations(true)
                     .center()
-                    .build();
+                    .build()
+                    {
+                        #[cfg(target_os = "macos")]
+                        crate::platform::hide_zoom_button(&win);
+                    }
                 }
             }
             "about" => {

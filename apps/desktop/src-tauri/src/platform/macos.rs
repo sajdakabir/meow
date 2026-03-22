@@ -163,6 +163,26 @@ pub fn register_space_observer(handle: tauri::AppHandle) {
     });
 }
 
+/// Hide the zoom (green fullscreen) button from a window's title bar.
+pub fn hide_zoom_button(window: &WebviewWindow) {
+    #[cfg(target_os = "macos")]
+    {
+        use cocoa::appkit::NSWindow;
+        use cocoa::base::id;
+        use objc::{msg_send, sel, sel_impl};
+
+        if let Ok(ns_window) = window.ns_window() {
+            unsafe {
+                let ns_win = ns_window as id;
+                let zoom_button: id = msg_send![ns_win, standardWindowButton: 2u64]; // NSWindowZoomButton = 2
+                if !zoom_button.is_null() {
+                    let _: () = msg_send![zoom_button, setHidden: true];
+                }
+            }
+        }
+    }
+}
+
 /// Place the window above the menu bar so it overlaps the notch area,
 /// and make it visible on all spaces including full-screen apps.
 pub fn set_above_menu_bar(window: &WebviewWindow) {
