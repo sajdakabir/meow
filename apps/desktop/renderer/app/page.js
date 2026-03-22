@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
 import { tauriBridge } from '../lib/tauri-bridge';
+import Onboarding from '../components/Onboarding';
 
 // ── Focus Pals ──
 const PALS = [
@@ -21,6 +22,7 @@ export default function Home() {
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
@@ -44,6 +46,11 @@ export default function Home() {
       if (savedPomo) setPomodoroMode(savedPomo === 'true');
       const savedPomoSettings = localStorage.getItem('meow-pomodoro-settings');
       if (savedPomoSettings) setPomodoroSettings(JSON.parse(savedPomoSettings));
+      // Show onboarding on first launch
+      if (!localStorage.getItem('meow-onboarded')) {
+        setShowOnboarding(true);
+        setExpanded(true);
+      }
     } catch {}
   }, []);
 
@@ -130,10 +137,19 @@ export default function Home() {
     } catch {}
   }, []);
 
+  const saveHistory = useCallback((entry) => {
+    try {
+      const history = JSON.parse(localStorage.getItem('meow-history') || '[]');
+      history.unshift(entry);
+      localStorage.setItem('meow-history', JSON.stringify(history.slice(0, 100)));
+    } catch {}
+  }, []);
+
   const handleTimerComplete = useCallback((...args) => {
     playChime();
     if (pomodoroMode) {
       const [mode, sessions] = args;
+      saveHistory({ type: mode, duration: mode === 'work' ? pomodoroSettings.workMinutes : mode === 'shortBreak' ? pomodoroSettings.shortBreakMinutes : pomodoroSettings.longBreakMinutes, task: taskName, date: new Date().toISOString() });
       if (mode === 'work') {
         tauriBridge.showNotification('Focus complete!', `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`);
       } else {
@@ -141,9 +157,10 @@ export default function Home() {
       }
     } else {
       const sessions = args[0];
+      saveHistory({ type: 'focus', duration: timerMinutes, task: taskName, date: new Date().toISOString() });
       tauriBridge.showNotification('Timer done!', `${sessions} session${sessions > 1 ? 's' : ''} completed.`);
     }
-  }, [playChime, pomodoroMode]);
+  }, [playChime, pomodoroMode, pomodoroSettings, timerMinutes, taskName, saveHistory]);
 
   const timer = useTimer({
     minutes: timerMinutes,
@@ -194,7 +211,7 @@ export default function Home() {
     };
   }, [timer.start, timer.pause, timer.reset]);
 
-  const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
+  const timerDisplay = timer.display;
 
   return (
     <div ref={containerRef} style={{ padding: expanded ? '6px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
@@ -246,6 +263,7 @@ export default function Home() {
             /* ── Expanded card ── */
             <motion.div
               key="expanded"
+              className="relative"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -604,6 +622,16 @@ export default function Home() {
                       </div>
                     </div>
                   </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Onboarding tour overlay */}
+              <AnimatePresence>
+                {showOnboarding && (
+                  <Onboarding onComplete={() => {
+                    setShowOnboarding(false);
+                    try { localStorage.setItem('meow-onboarded', 'true'); } catch {}
+                  }} />
                 )}
               </AnimatePresence>
             </motion.div>
