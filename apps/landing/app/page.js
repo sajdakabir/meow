@@ -86,35 +86,6 @@ const FEATURES = [
     title: 'Focus Pals',
     desc: 'Choose from adorable companions — Luna, Rusty, Hoot, Bamboo, or Clover — to keep you company while you work.',
   },
-  {
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    ),
-    title: 'Task Naming',
-    desc: 'Label your focus sessions with a task name so you know exactly what you worked on.',
-  },
-  {
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-      </svg>
-    ),
-    title: 'Session History',
-    desc: 'Track all your completed focus sessions with duration, task name, and timestamps in a separate history window.',
-  },
-  {
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 01-3.46 0" />
-      </svg>
-    ),
-    title: 'Gentle Notifications',
-    desc: 'A soft chime and native notification when your session ends. Never miss the end of a focus block.',
-  },
 ];
 
 const TESTIMONIALS = [
