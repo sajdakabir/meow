@@ -194,7 +194,7 @@ export default function Home() {
     };
   }, [timer.start, timer.pause, timer.reset]);
 
-  const timerDisplay = timer.isRunning ? timer.display : `${Math.ceil(timer.timeLeft / 60)}:00`;
+  const timerDisplay = timer.display;
 
   return (
     <div ref={containerRef} style={{ padding: expanded ? '6px 8px 8px' : '0', transition: 'padding 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }}>
