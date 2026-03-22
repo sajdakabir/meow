@@ -1,18 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { tauriBridge } from '../../lib/tauri-bridge';
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('meow-history') || '[]');
-      setHistory(saved);
-    } catch {}
+    tauriBridge.getHistory().then(setHistory);
   }, []);
 
-  const clearHistory = () => {
-    localStorage.setItem('meow-history', '[]');
+  const clearHistory = async () => {
+    await tauriBridge.clearHistory();
     setHistory([]);
   };
 
@@ -46,7 +44,7 @@ export default function HistoryPage() {
       {/* List */}
       {history.length === 0 ? (
         <div className="text-center mt-16">
-          <div className="text-3xl mb-3">{'\u{1F431}'}</div>
+          <img src="/image.png" alt="meow" className="w-10 h-10 rounded-xl mx-auto mb-3" style={{ background: '#2c2c2e', padding: 4 }} />
           <p className="text-text-muted text-sm">No sessions yet.</p>
           <p className="text-text-muted text-xs mt-1">Start focusing and your history will show up here!</p>
         </div>
@@ -62,7 +60,7 @@ export default function HistoryPage() {
                 className="flex items-center gap-3 px-3.5 py-2.5"
                 style={{ background: '#2c2c2e', borderRadius: 12 }}
               >
-                <span className="text-lg">{getIcon(h.type)}</span>
+                <span className="text-lg">{h.pal || getIcon(h.type)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[13px] font-medium text-text-primary">{formatType(h.type)}</div>
                   {h.task && (

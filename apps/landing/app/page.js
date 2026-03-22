@@ -30,12 +30,41 @@ const FEATURES = [
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
+    ),
+    title: 'Menu Bar Native',
+    desc: 'Lives in your Mac\'s menu bar as a Dynamic Island-style notch widget. Always one click away, never in your way.',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
+    ),
+    title: 'Fully Private',
+    desc: 'Runs entirely offline. No accounts, no tracking, no data leaves your Mac. Everything stored locally.',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    ),
+    title: 'Just 11 MB',
+    desc: 'Built with Tauri — incredibly lightweight. No Electron, no bloat, just a tiny native app that sips resources.',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
     ),
-    title: 'Pomodoro Timer',
-    desc: 'Stay focused with customizable work sessions and breaks, right in your menu bar.',
+    title: 'Simple & Pomodoro Timer',
+    desc: 'Choose between a simple countdown or structured Pomodoro sessions with work, short break, and long break cycles.',
   },
   {
     icon: (
@@ -46,7 +75,7 @@ const FEATURES = [
       </svg>
     ),
     title: 'Ambient Sounds',
-    desc: 'Layer rain, forest, ocean, and more to create the perfect soundscape for deep work.',
+    desc: 'Layer rain, forest, ocean, fire, cafe, and more. Mix your perfect soundscape with individual volume controls.',
   },
   {
     icon: (
@@ -55,36 +84,36 @@ const FEATURES = [
       </svg>
     ),
     title: 'Focus Pals',
-    desc: 'Choose from adorable companions that keep you company while you work.',
+    desc: 'Choose from adorable companions — Luna, Rusty, Hoot, Bamboo, or Clover — to keep you company while you work.',
   },
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
       </svg>
     ),
-    title: 'Menu Bar Native',
-    desc: 'Lives in your Mac\'s menu bar. Always one click away, never in your way.',
+    title: 'Task Naming',
+    desc: 'Label your focus sessions with a task name so you know exactly what you worked on.',
   },
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
     ),
-    title: 'Fully Private',
-    desc: 'Runs entirely offline. No accounts, no tracking, no data leaves your Mac.',
+    title: 'Session History',
+    desc: 'Track all your completed focus sessions with duration, task name, and timestamps in a separate history window.',
   },
   {
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 01-3.46 0" />
       </svg>
     ),
-    title: 'Lightweight',
-    desc: 'Uses minimal resources. No Electron, no bloat — just a tiny native app.',
+    title: 'Gentle Notifications',
+    desc: 'A soft chime and native notification when your session ends. Never miss the end of a focus block.',
   },
 ];
 
@@ -96,11 +125,12 @@ const TESTIMONIALS = [
 
 const FAQS = [
   { q: 'Is meow really free?', a: 'Yes! meow is completely free and open source. No hidden fees, no subscriptions, no catch.' },
-  { q: 'Can I contribute to the project?', a: 'Absolutely! meow is open source and we welcome contributions. Check out our GitHub repo to get started.' },
+  { q: 'What\'s the difference between Simple and Pomodoro mode?', a: 'Simple mode is a single countdown timer you set to any duration. Pomodoro mode automatically cycles between focus sessions, short breaks, and long breaks with customizable durations.' },
+  { q: 'Where is my session history stored?', a: 'All session history is stored locally on your Mac. Nothing is sent to any server. You can view it from the tray menu and clear it anytime.' },
   { q: 'What Macs are supported?', a: 'meow works on macOS 12 (Monterey) and later, on both Intel and Apple Silicon Macs.' },
-  { q: 'Can I hide the animal & timer?', a: 'Of course! You can toggle the focus pal and timer visibility anytime from the settings.' },
   { q: 'Does meow collect any data?', a: 'No. meow runs entirely offline on your machine. We don\'t collect any analytics or personal data whatsoever.' },
-  { q: 'How can I give feedback or report a bug?', a: 'We\'d love to hear from you! open an issue on our GitHub.' },
+  { q: 'Can I contribute to the project?', a: 'Absolutely! meow is open source and we welcome contributions. Check out our GitHub repo to get started.' },
+  { q: 'How can I give feedback or report a bug?', a: 'We\'d love to hear from you! Open an issue on our GitHub.' },
 ];
 
 // ── Animated section wrapper ──

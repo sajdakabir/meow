@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
 import { tauriBridge } from '../lib/tauri-bridge';
-import Onboarding from '../components/Onboarding';
 
 // ── Focus Pals ──
 const PALS = [
@@ -22,7 +21,6 @@ export default function Home() {
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
@@ -46,11 +44,6 @@ export default function Home() {
       if (savedPomo) setPomodoroMode(savedPomo === 'true');
       const savedPomoSettings = localStorage.getItem('meow-pomodoro-settings');
       if (savedPomoSettings) setPomodoroSettings(JSON.parse(savedPomoSettings));
-      // Show onboarding on first launch
-      if (!localStorage.getItem('meow-onboarded')) {
-        setShowOnboarding(true);
-        setExpanded(true);
-      }
     } catch {}
   }, []);
 
@@ -138,18 +131,14 @@ export default function Home() {
   }, []);
 
   const saveHistory = useCallback((entry) => {
-    try {
-      const history = JSON.parse(localStorage.getItem('meow-history') || '[]');
-      history.unshift(entry);
-      localStorage.setItem('meow-history', JSON.stringify(history.slice(0, 100)));
-    } catch {}
+    tauriBridge.saveHistoryEntry(entry);
   }, []);
 
   const handleTimerComplete = useCallback((...args) => {
     playChime();
     if (pomodoroMode) {
       const [mode, sessions] = args;
-      saveHistory({ type: mode, duration: mode === 'work' ? pomodoroSettings.workMinutes : mode === 'shortBreak' ? pomodoroSettings.shortBreakMinutes : pomodoroSettings.longBreakMinutes, task: taskName, date: new Date().toISOString() });
+      saveHistory({ type: mode, duration: mode === 'work' ? pomodoroSettings.workMinutes : mode === 'shortBreak' ? pomodoroSettings.shortBreakMinutes : pomodoroSettings.longBreakMinutes, task: taskName, pal: PALS[selectedPal].icon, date: new Date().toISOString() });
       if (mode === 'work') {
         tauriBridge.showNotification('Focus complete!', `${sessions} session${sessions > 1 ? 's' : ''} done. Time for a break.`);
       } else {
@@ -157,10 +146,10 @@ export default function Home() {
       }
     } else {
       const sessions = args[0];
-      saveHistory({ type: 'focus', duration: timerMinutes, task: taskName, date: new Date().toISOString() });
+      saveHistory({ type: 'focus', duration: timerMinutes, task: taskName, pal: PALS[selectedPal].icon, date: new Date().toISOString() });
       tauriBridge.showNotification('Timer done!', `${sessions} session${sessions > 1 ? 's' : ''} completed.`);
     }
-  }, [playChime, pomodoroMode, pomodoroSettings, timerMinutes, taskName, saveHistory]);
+  }, [playChime, pomodoroMode, pomodoroSettings, timerMinutes, taskName, selectedPal, saveHistory]);
 
   const timer = useTimer({
     minutes: timerMinutes,
@@ -263,7 +252,6 @@ export default function Home() {
             /* ── Expanded card ── */
             <motion.div
               key="expanded"
-              className="relative"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -282,6 +270,7 @@ export default function Home() {
                   </svg>
                 </button>
                 <button
+                  data-tour="settings-btn"
                   onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
@@ -307,6 +296,7 @@ export default function Home() {
                         setShowPalPicker(false);
                       }
                     }}
+                    data-tour="timer-pill"
                     className="no-drag font-semibold px-3 py-1.5 min-w-16 text-center transition-colors cursor-pointer"
                     style={{ background: '#3a3a3c', borderRadius: 12, flexShrink: 0 }}
                   >
@@ -343,6 +333,7 @@ export default function Home() {
 
                   <div className="flex items-center gap-1.5">
                     <motion.button
+                      data-tour="play-btn"
                       whileTap={{ scale: 0.9 }}
                       onClick={timer.toggle}
                       className="no-drag w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
@@ -377,6 +368,7 @@ export default function Home() {
               {/* Focus Pal + Music */}
               <div className="px-4 pb-3.5 flex gap-2.5">
                 <button
+                  data-tour="focus-pal"
                   onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
@@ -386,6 +378,7 @@ export default function Home() {
                 </button>
 
                 <button
+                  data-tour="music-btn"
                   onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
@@ -625,15 +618,6 @@ export default function Home() {
                 )}
               </AnimatePresence>
 
-              {/* Onboarding tour overlay */}
-              <AnimatePresence>
-                {showOnboarding && (
-                  <Onboarding onComplete={() => {
-                    setShowOnboarding(false);
-                    try { localStorage.setItem('meow-onboarded', 'true'); } catch {}
-                  }} />
-                )}
-              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>

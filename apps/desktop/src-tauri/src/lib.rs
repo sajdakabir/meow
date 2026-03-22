@@ -18,6 +18,9 @@ pub fn run() {
             commands::update_tray_title,
             commands::window_close,
             commands::focus_window,
+            commands::get_history,
+            commands::save_history,
+            commands::clear_history,
         ])
         .setup(|app| {
             // Accessory policy: no dock icon, but windows can float above full-screen apps.

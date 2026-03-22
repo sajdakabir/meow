@@ -1,133 +1,154 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STEPS = [
   {
-    title: 'Welcome to meow!',
-    desc: 'Let\u2019s take a quick tour so you know where everything is.',
-    icon: '\u{1F431}',
+    target: '[data-tour="timer-pill"]',
+    title: 'Timer',
+    desc: 'Tap to pick your focus duration',
+    position: 'below',
   },
   {
-    title: 'Set your timer',
-    desc: 'Tap the time pill to pick your focus duration. You can choose between Simple and Pomodoro mode in Settings.',
-    icon: '\u23F1\uFE0F',
-    highlight: 'timer',
+    target: '[data-tour="play-btn"]',
+    title: 'Play / Pause',
+    desc: 'Start or pause your session',
+    position: 'below',
   },
   {
-    title: 'Play & Pause',
-    desc: 'Hit the play button to start. While running, tap it again to pause \u2014 your time is saved exactly where you left off.',
-    icon: '\u25B6\uFE0F',
-    highlight: 'controls',
+    target: '[data-tour="focus-pal"]',
+    title: 'Focus Pal',
+    desc: 'Pick a cute companion',
+    position: 'below',
   },
   {
-    title: 'Stop & Reset',
-    desc: 'The stop button (square icon) appears while the timer is running. It resets your session back to the start.',
-    icon: '\u23F9\uFE0F',
-    highlight: 'controls',
+    target: '[data-tour="music-btn"]',
+    title: 'Music',
+    desc: 'Layer ambient sounds',
+    position: 'below',
   },
   {
-    title: 'Focus Pal & Music',
-    desc: 'Pick a cute companion and layer ambient sounds to create your perfect focus vibe.',
-    icon: '\u{1F3B5}',
-    highlight: 'palmusic',
-  },
-  {
-    title: 'Session History',
-    desc: 'Right-click the menu bar icon and select "History" to see all your completed sessions in a separate window.',
-    icon: '\u{1F4CB}',
-    highlight: 'topbar',
-  },
-  {
+    target: '[data-tour="settings-btn"]',
     title: 'Settings',
-    desc: 'The gear icon opens settings where you can switch between Simple and Pomodoro timer modes.',
-    icon: '\u2699\uFE0F',
-    highlight: 'topbar',
-  },
-  {
-    title: 'You\u2019re all set!',
-    desc: 'Start a focus session and let meow keep you company. You got this!',
-    icon: '\u{1F389}',
+    desc: 'Simple or Pomodoro mode',
+    position: 'below',
   },
 ];
 
 export default function Onboarding({ onComplete }) {
   const [step, setStep] = useState(0);
+  const [pos, setPos] = useState(null);
+  const tooltipRef = useRef(null);
+
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
+  useEffect(() => {
+    // Find the target element and get its position
+    const el = document.querySelector(current.target);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2,
+        targetRect: rect,
+      });
+      // Add a highlight ring to the target
+      el.style.outline = '2px solid #818cf8';
+      el.style.outlineOffset = '2px';
+      el.style.borderRadius = '12px';
+      el.style.position = 'relative';
+      el.style.zIndex = '60';
+    }
+    return () => {
+      if (el) {
+        el.style.outline = '';
+        el.style.outlineOffset = '';
+        el.style.zIndex = '';
+      }
+    };
+  }, [step, current.target]);
+
+  const goNext = () => {
+    if (isLast) onComplete();
+    else setStep(step + 1);
+  };
+
+  const goBack = () => {
+    if (step > 0) setStep(step - 1);
+  };
+
+  if (!pos) return null;
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-end justify-center pb-3 px-3"
-      style={{ background: 'rgba(0,0,0,0.75)', borderRadius: 'inherit' }}
-    >
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.25 }}
-        className="w-full p-4"
-        style={{ background: '#2c2c2e', borderRadius: 16 }}
-      >
-        <div className="text-center mb-3">
-          <span className="text-2xl">{current.icon}</span>
-        </div>
-        <h3 className="text-sm font-semibold text-white text-center mb-1">
-          {current.title}
-        </h3>
-        <p className="text-xs text-text-secondary text-center leading-relaxed mb-4">
-          {current.desc}
-        </p>
+    <>
+      {/* Dim overlay */}
+      <div
+        className="fixed inset-0 z-40"
+        style={{ background: 'rgba(0,0,0,0.5)' }}
+        onClick={goNext}
+      />
 
-        <div className="flex items-center justify-between">
-          {/* Dots */}
-          <div className="flex gap-1">
-            {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className="w-1.5 h-1.5 rounded-full transition-colors"
-                style={{
-                  background: i === step ? '#818cf8' : 'rgba(255,255,255,0.15)',
-                }}
-              />
-            ))}
-          </div>
+      {/* Tooltip */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          ref={tooltipRef}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.2 }}
+          className="fixed z-50 no-drag"
+          style={{
+            top: pos.top,
+            left: Math.max(12, Math.min(pos.left - 100, 350 - 212)),
+            width: 200,
+          }}
+        >
+          {/* Arrow */}
+          <div
+            className="absolute -top-1.5 w-3 h-3 rotate-45"
+            style={{
+              background: '#2c2c2e',
+              left: Math.min(Math.max(pos.left - Math.max(12, Math.min(pos.left - 100, 350 - 212)) - 6, 12), 180),
+            }}
+          />
 
-          {/* Buttons */}
-          <div className="flex gap-2">
-            {step > 0 && (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="no-drag text-[11px] text-text-muted hover:text-text-secondary px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                Back
-              </button>
-            )}
-            {!isLast && step === 0 && (
-              <button
-                onClick={onComplete}
-                className="no-drag text-[11px] text-text-muted hover:text-text-secondary px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-              >
-                Skip
-              </button>
-            )}
-            <button
-              onClick={() => {
-                if (isLast) onComplete();
-                else setStep(step + 1);
-              }}
-              className="no-drag text-[11px] font-medium text-white px-4 py-1.5 rounded-lg transition-colors cursor-pointer"
-              style={{ background: '#6366f1' }}
-            >
-              {isLast ? 'Get Started' : 'Next'}
-            </button>
+          <div className="p-3 relative" style={{ background: '#2c2c2e', borderRadius: 12 }}>
+            <p className="text-[11px] font-semibold text-white mb-0.5">{current.title}</p>
+            <p className="text-[10px] text-text-secondary leading-relaxed mb-2.5">{current.desc}</p>
+
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] text-text-muted">{step + 1}/{STEPS.length}</span>
+              <div className="flex gap-1.5">
+                {step === 0 && (
+                  <button
+                    onClick={onComplete}
+                    className="text-[10px] text-text-muted hover:text-text-secondary px-2 py-1 rounded cursor-pointer"
+                  >
+                    Skip
+                  </button>
+                )}
+                {step > 0 && (
+                  <button
+                    onClick={goBack}
+                    className="text-[10px] text-text-muted hover:text-text-secondary px-2 py-1 rounded cursor-pointer"
+                  >
+                    Back
+                  </button>
+                )}
+                <button
+                  onClick={goNext}
+                  className="text-[10px] font-medium text-white px-3 py-1 rounded cursor-pointer"
+                  style={{ background: '#6366f1' }}
+                >
+                  {isLast ? 'Done' : 'Next'}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 }
