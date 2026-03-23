@@ -76,11 +76,6 @@ pub fn show_popover(handle: &AppHandle, focus: bool) -> Result<(), Box<dyn std::
         center_popover(handle, EXPANDED_WIDTH)?;
 
         let _ = win.emit("popover-expand", ());
-        // Always activate the app so clicks register immediately
-        // without needing a second click to "focus" the window first
-        #[cfg(target_os = "macos")]
-        crate::platform::activate_app_for_input();
-        let _ = win.set_focus();
         POPOVER_VISIBLE.store(true, Ordering::SeqCst);
     }
     Ok(())
