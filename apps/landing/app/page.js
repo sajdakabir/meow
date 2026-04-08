@@ -89,7 +89,7 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { text: 'meow turned my chaotic work sessions into something I actually look forward to.', author: 'Sarah K.', role: 'Designer' },
+  { text: 'meow turned my chaotic work sessions into something I actually look forward to.', author: 'Aditya Agrawal', role: 'Tesla data leader' },
   { text: 'Love that everything runs locally — perfect setup for someone who doesn\'t like sharing data. Awesome work, bro.', author: 'Paras Chugani', role: 'CTO, Superu' },
   { text: 'So simple, so beautiful. It just sits in my menu bar and does its job perfectly.', author: 'Oliur Sahin', role: 'Founder' },
 ];
