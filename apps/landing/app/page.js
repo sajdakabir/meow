@@ -630,6 +630,99 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Eye Break Spotlight */}
+      <section className="relative bg-[#fafafa] border-t border-gray-100 overflow-hidden">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+            {/* Copy */}
+            <FadeIn>
+              <span className="text-sm font-medium text-emerald-500 mb-3 block">New · Your eyes matter too</span>
+              <h2 className="font-hand text-4xl sm:text-5xl text-gray-900 leading-tight">
+                A gentle nudge to{' '}
+                <span className="bg-linear-to-r from-emerald-500 to-indigo-500 bg-clip-text text-transparent">
+                  look away
+                </span>
+              </h2>
+              <p className="mt-5 text-gray-500 leading-relaxed">
+                Every 20 minutes, meow reminds you to glance at something 20 feet away for 20 seconds —
+                the classic 20-20-20 rule, quietly built in.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  { t: 'Configurable', d: 'Pick the interval and break length that fit your rhythm.' },
+                  { t: 'Strict mode', d: 'Covers the screen during breaks so you actually rest your eyes — no skip button.' },
+                  { t: 'Snooze', d: 'Mid-thought? Push it back 5 or 15 minutes with one click.' },
+                ].map((item) => (
+                  <li key={item.t} className="flex gap-3">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500 shrink-0 mt-0.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <div>
+                      <span className="text-gray-800 font-medium text-[15px]">{item.t}</span>
+                      <span className="text-gray-500 text-[15px]"> — {item.d}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </FadeIn>
+
+            {/* Mock overlay */}
+            <FadeIn delay={0.1}>
+              <div
+                className="relative rounded-3xl overflow-hidden shadow-2xl aspect-4/3"
+                style={{ background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)' }}
+              >
+                {/* Ambient glows */}
+                <div
+                  className="absolute top-1/4 left-1/4 w-48 h-48 rounded-full pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)' }}
+                />
+                <div
+                  className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.18) 0%, transparent 70%)' }}
+                />
+
+                {/* Content */}
+                <div className="relative h-full flex flex-col items-center justify-center text-center px-8">
+                  <div className="text-4xl mb-3">🐱</div>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-300 mb-3">
+                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <h3 className="text-xl font-semibold text-white mb-1">Look away</h3>
+                  <p className="text-xs text-white/50 mb-5 max-w-55">
+                    Focus on something 20 feet away to rest your eyes
+                  </p>
+
+                  {/* Countdown ring */}
+                  <div className="relative w-20 h-20">
+                    <svg className="w-20 h-20 -rotate-90" viewBox="0 0 96 96">
+                      <circle cx="48" cy="48" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+                      <circle
+                        cx="48" cy="48" r="42" fill="none"
+                        stroke="url(#landingBreakGradient)" strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={2 * Math.PI * 42}
+                        strokeDashoffset={2 * Math.PI * 42 * 0.35}
+                      />
+                      <defs>
+                        <linearGradient id="landingBreakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#6366f1" />
+                          <stop offset="100%" stopColor="#34d399" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-white tabular-nums">13</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="bg-[#fafafa] border-t border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-24">
