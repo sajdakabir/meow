@@ -124,9 +124,9 @@ export const tauriBridge = {
     }
   },
 
-  openEyeBreak: () => {
+  openEyeBreak: ({ duration = 20, strict = false } = {}) => {
     const t = getTauri();
-    if (t) t.core.invoke('open_eye_break');
+    if (t) t.core.invoke('open_eye_break', { duration, strict });
   },
 
   closeEyeBreak: () => {
