@@ -553,7 +553,7 @@ export default function Home() {
               className="mt-6 text-lg sm:text-xl text-gray-500 max-w-lg mx-auto leading-relaxed"
             >
               A little menu-bar app that pairs ambient sounds with a pomodoro
-              timer and a furry friend — so deep work feels less lonely.
+              timer, a furry friend, and gentle eye-break reminders — so deep work feels less lonely.
             </motion.p>
 
             <motion.div
