@@ -163,9 +163,20 @@ export default function Home() {
   const eyeBreak = useEyeBreak({
     onBreakDue: () => {
       tauriBridge.showNotification('Time for an eye break', 'Look away from screen for 20 seconds');
-      tauriBridge.openEyeBreak();
     },
   });
+
+  // Open the overlay window whenever a break starts, passing current settings
+  useEffect(() => {
+    if (eyeBreak.isBreakActive) {
+      tauriBridge.openEyeBreak({
+        duration: eyeBreak.settings.breakDurationSeconds,
+        strict: eyeBreak.settings.strictMode,
+      });
+    } else {
+      tauriBridge.closeEyeBreak();
+    }
+  }, [eyeBreak.isBreakActive, eyeBreak.settings.breakDurationSeconds, eyeBreak.settings.strictMode]);
 
   // Listen for snooze events from the overlay window
   useEffect(() => {
@@ -689,6 +700,26 @@ export default function Home() {
                             </button>
                           ))}
                         </div>
+                      </div>
+
+                      {/* Strict mode toggle */}
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-text-secondary">Strict mode</span>
+                          <span className="text-[10px] text-text-muted">Can't skip — forces the break</span>
+                        </div>
+                        <button
+                          onClick={() => eyeBreak.updateSettings({ strictMode: !eyeBreak.settings.strictMode })}
+                          className={`no-drag w-9 h-5 rounded-full transition-all relative cursor-pointer ${
+                            eyeBreak.settings.strictMode ? 'bg-success' : 'bg-border'
+                          }`}
+                        >
+                          <motion.div
+                            className="w-3.5 h-3.5 rounded-full bg-white absolute top-0.5"
+                            animate={{ left: eyeBreak.settings.strictMode ? '18px' : '3px' }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          />
+                        </button>
                       </div>
 
                       {/* Take break now button */}
