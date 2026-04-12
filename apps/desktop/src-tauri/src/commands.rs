@@ -94,6 +94,55 @@ pub async fn clear_history(app: AppHandle) -> Result<(), String> {
     std::fs::write(&path, "[]").map_err(|e| e.to_string())
 }
 
+/// Open a full-screen eye break overlay window.
+#[tauri::command]
+pub async fn open_eye_break(app: AppHandle) -> Result<(), String> {
+    use tauri::webview::WebviewWindowBuilder;
+
+    // If already open, just focus it
+    if let Some(win) = app.get_webview_window("eyebreak") {
+        win.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    // Get the monitor size for full-screen overlay
+    let monitor = app
+        .primary_monitor()
+        .map_err(|e| e.to_string())?
+        .ok_or("No primary monitor")?;
+    let size = monitor.size();
+    let scale = monitor.scale_factor();
+    let w = size.width as f64 / scale;
+    let h = size.height as f64 / scale;
+
+    let _win = WebviewWindowBuilder::new(
+        &app,
+        "eyebreak",
+        tauri::WebviewUrl::App("eyebreak".into()),
+    )
+    .title("")
+    .inner_size(w, h)
+    .position(0.0, 0.0)
+    .decorations(false)
+    .resizable(false)
+    .always_on_top(true)
+    .transparent(true)
+    .skip_taskbar(true)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+/// Close the eye break overlay window.
+#[tauri::command]
+pub async fn close_eye_break(app: AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("eyebreak") {
+        win.close().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Register the global Cmd+Shift+F shortcut to toggle the popover.
 pub fn register_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);

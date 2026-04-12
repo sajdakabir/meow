@@ -21,6 +21,8 @@ pub fn run() {
             commands::get_history,
             commands::save_history,
             commands::clear_history,
+            commands::open_eye_break,
+            commands::close_eye_break,
         ])
         .setup(|app| {
             // Accessory policy: no dock icon, but windows can float above full-screen apps.
