@@ -107,6 +107,7 @@ const TESTIMONIALS = [
 const FAQS = [
   { q: 'Is meow really free?', a: 'Yes! meow is completely free and open source. No hidden fees, no subscriptions, no catch.' },
   { q: 'What\'s the difference between Simple and Pomodoro mode?', a: 'Simple mode is a single countdown timer you set to any duration. Pomodoro mode automatically cycles between focus sessions, short breaks, and long breaks with customizable durations.' },
+  { q: 'How do eye breaks work?', a: 'meow follows the 20-20-20 rule — every 20 minutes it reminds you to look at something 20 feet away for 20 seconds. You can change the interval and duration, snooze a reminder, or enable strict mode which covers the screen so you actually rest your eyes.' },
   { q: 'Where is my session history stored?', a: 'All session history is stored locally on your Mac. Nothing is sent to any server. You can view it from the tray menu and clear it anytime.' },
   { q: 'What Macs are supported?', a: 'meow works on macOS 12 (Monterey) and later, on both Intel and Apple Silicon Macs.' },
   { q: 'Does meow collect any data?', a: 'No. meow runs entirely offline on your machine. We don\'t collect any analytics or personal data whatsoever.' },
