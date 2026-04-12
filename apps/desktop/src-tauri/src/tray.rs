@@ -12,6 +12,8 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     let history = MenuItemBuilder::with_id("history", "History")
         .build(app)?;
+    let eye_break_now = MenuItemBuilder::with_id("eye-break-now", "Eye Break Now")
+        .build(app)?;
     let about = MenuItemBuilder::with_id("about", "About meow")
         .build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit meow")
@@ -20,6 +22,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 
     let menu = MenuBuilder::new(app)
         .item(&history)
+        .item(&eye_break_now)
         .item(&about)
         .separator()
         .item(&quit)
@@ -54,6 +57,11 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                         #[cfg(target_os = "macos")]
                         crate::platform::hide_zoom_button(&win);
                     }
+                }
+            }
+            "eye-break-now" => {
+                if let Some(w) = app.get_webview_window("popover") {
+                    let _ = w.emit("tray-eye-break-now", ());
                 }
             }
             "about" => {

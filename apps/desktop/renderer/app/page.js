@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
+import { useEyeBreak } from '../hooks/useEyeBreak';
 import { tauriBridge } from '../lib/tauri-bridge';
 
 // ── Focus Pals ──
@@ -21,6 +22,7 @@ export default function Home() {
   const [showPalPicker, setShowPalPicker] = useState(false);
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showEyeBreak, setShowEyeBreak] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
@@ -158,6 +160,52 @@ export default function Home() {
     onComplete: handleTimerComplete,
   });
   const audio = useAudio();
+  const eyeBreak = useEyeBreak({
+    onBreakDue: () => {
+      tauriBridge.showNotification('Time for an eye break', 'Look away from screen for 20 seconds');
+    },
+  });
+
+  // Open the overlay window whenever a break starts, passing current settings
+  useEffect(() => {
+    if (eyeBreak.isBreakActive) {
+      tauriBridge.openEyeBreak({
+        duration: eyeBreak.settings.breakDurationSeconds,
+        strict: eyeBreak.settings.strictMode,
+      });
+    } else {
+      tauriBridge.closeEyeBreak();
+    }
+  }, [eyeBreak.isBreakActive, eyeBreak.settings.breakDurationSeconds, eyeBreak.settings.strictMode]);
+
+  // Listen for snooze events from the overlay window
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const t = tauriBridge.getTauri();
+    if (!t) return;
+    const unlisten = t.event.listen('eye-break-snoozed', (event) => {
+      const minutes = event?.payload?.minutes || 5;
+      eyeBreak.snooze(minutes);
+    });
+    return () => { unlisten.then(fn => fn()); };
+  }, [eyeBreak.snooze]);
+
+  // Listen for tray events
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const unlisteners = [];
+    const setup = async () => {
+      unlisteners.push(await tauriBridge.onEyeBreakSkip(() => {
+        eyeBreak.dismissBreak();
+        tauriBridge.closeEyeBreak();
+      }));
+      unlisteners.push(await tauriBridge.onEyeBreakNow(() => {
+        eyeBreak.startBreak();
+      }));
+    };
+    setup();
+    return () => { unlisteners.forEach(fn => fn && fn()); };
+  }, [eyeBreak.dismissBreak, eyeBreak.startBreak]);
 
   const activeCount = Object.keys(audio.activeSounds).length;
   const pal = PALS[selectedPal];
@@ -190,6 +238,7 @@ export default function Home() {
         setShowPalPicker(false);
         setShowTimerPicker(false);
         setShowAbout(false);
+        setShowEyeBreak(false);
         setTimeout(() => { isCollapsingRef.current = false; }, 300);
       }));
     };
@@ -260,7 +309,7 @@ export default function Home() {
               {/* Settings & About */}
               <div className="flex items-center justify-end gap-1 px-4 pt-2.5">
                 <button
-                  onClick={() => { setShowAbout(!showAbout); setShowSettings(false); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); }}
+                  onClick={() => { setShowAbout(!showAbout); setShowSettings(false); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowEyeBreak(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -271,7 +320,7 @@ export default function Home() {
                 </button>
                 <button
                   data-tour="settings-btn"
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -292,8 +341,9 @@ export default function Home() {
                     onClick={() => {
                       if (!timer.isRunning) {
                         setShowTimerPicker(!showTimerPicker);
-                                               setShowSounds(false);
+                        setShowSounds(false);
                         setShowPalPicker(false);
+                        setShowEyeBreak(false);
                       }
                     }}
                     data-tour="timer-pill"
@@ -366,10 +416,10 @@ export default function Home() {
               </div>
 
               {/* Focus Pal + Music */}
-              <div className="px-4 pb-3.5 flex gap-2.5">
+              <div className="px-4 pb-2 flex gap-2.5">
                 <button
                   data-tour="focus-pal"
-                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -379,7 +429,7 @@ export default function Home() {
 
                 <button
                   data-tour="music-btn"
-                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -396,6 +446,31 @@ export default function Home() {
                     }`} style={activeCount > 0 ? {} : { background: '#3a3a3c' }}
                   >
                     {activeCount > 0 ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Eye Break */}
+              <div className="px-4 pb-3.5">
+                <button
+                  onClick={() => { setShowEyeBreak(!showEyeBreak); setShowSounds(false); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  className="no-drag w-full px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
+                  style={{ background: '#2c2c2e', borderRadius: 16 }}
+                >
+                  <span className="text-sm text-text-secondary font-medium">Eye Break</span>
+                  <span className="text-[11px] text-text-muted ml-auto tabular-nums">
+                    {eyeBreak.settings.enabled ? eyeBreak.nextBreakDisplay : ''}
+                  </span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      eyeBreak.updateSettings({ enabled: !eyeBreak.settings.enabled });
+                    }}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                      eyeBreak.settings.enabled ? 'bg-success/20 text-success cursor-pointer' : 'text-text-muted cursor-pointer'
+                    }`} style={eyeBreak.settings.enabled ? {} : { background: '#3a3a3c' }}
+                  >
+                    {eyeBreak.settings.enabled ? 'ON' : 'OFF'}
                   </span>
                 </button>
               </div>
@@ -562,6 +637,102 @@ export default function Home() {
                           </button>
                         ))}
                       </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {showEyeBreak && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-4 mb-3 space-y-4" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-success">
+                          <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <span className="text-xs font-medium text-text-secondary">20-20-20 Rule</span>
+                      </div>
+                      <p className="text-[10px] text-text-muted leading-relaxed">
+                        Every 20 minutes, look at something 20 feet away for 20 seconds to reduce eye strain.
+                      </p>
+
+                      {/* Interval picker */}
+                      <div>
+                        <div className="text-[10px] text-text-muted mb-2">Remind every</div>
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {[10, 15, 20, 30].map(min => (
+                            <button
+                              key={min}
+                              onClick={() => eyeBreak.updateSettings({ intervalMinutes: min })}
+                              className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+                                eyeBreak.settings.intervalMinutes === min
+                                  ? 'bg-success/20 text-success ring-1 ring-success/30'
+                                  : 'text-text-secondary hover:bg-white/10'
+                              }`}
+                              style={{ background: eyeBreak.settings.intervalMinutes === min ? undefined : '#1c1c1e' }}
+                            >
+                              {min}m
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Break duration */}
+                      <div>
+                        <div className="text-[10px] text-text-muted mb-2">Break duration</div>
+                        <div className="grid grid-cols-3 gap-1.5">
+                          {[10, 20, 30].map(sec => (
+                            <button
+                              key={sec}
+                              onClick={() => eyeBreak.updateSettings({ breakDurationSeconds: sec })}
+                              className={`no-drag py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer ${
+                                eyeBreak.settings.breakDurationSeconds === sec
+                                  ? 'bg-success/20 text-success ring-1 ring-success/30'
+                                  : 'text-text-secondary hover:bg-white/10'
+                              }`}
+                              style={{ background: eyeBreak.settings.breakDurationSeconds === sec ? undefined : '#1c1c1e' }}
+                            >
+                              {sec}s
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Strict mode toggle */}
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-text-secondary">Strict mode</span>
+                          <span className="text-[10px] text-text-muted">Can't skip — forces the break</span>
+                        </div>
+                        <button
+                          onClick={() => eyeBreak.updateSettings({ strictMode: !eyeBreak.settings.strictMode })}
+                          className={`no-drag w-9 h-5 rounded-full transition-all relative cursor-pointer ${
+                            eyeBreak.settings.strictMode ? 'bg-success' : 'bg-border'
+                          }`}
+                        >
+                          <motion.div
+                            className="w-3.5 h-3.5 rounded-full bg-white absolute top-0.5"
+                            animate={{ left: eyeBreak.settings.strictMode ? '18px' : '3px' }}
+                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Take break now button */}
+                      <button
+                        onClick={() => {
+                          eyeBreak.startBreak();
+                          setShowEyeBreak(false);
+                        }}
+                        className="no-drag w-full py-2 rounded-xl text-xs font-medium text-success hover:bg-success/10 transition-colors cursor-pointer"
+                        style={{ background: 'rgba(52,211,153,0.08)' }}
+                      >
+                        Take a break now
+                      </button>
                     </div>
                   </motion.div>
                 )}

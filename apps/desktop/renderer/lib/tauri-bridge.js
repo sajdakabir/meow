@@ -124,5 +124,27 @@ export const tauriBridge = {
     }
   },
 
+  openEyeBreak: ({ duration = 20, strict = false } = {}) => {
+    const t = getTauri();
+    if (t) t.core.invoke('open_eye_break', { duration, strict });
+  },
+
+  closeEyeBreak: () => {
+    const t = getTauri();
+    if (t) t.core.invoke('close_eye_break');
+  },
+
+  onEyeBreakSkip: async (cb) => {
+    const t = getTauri();
+    if (t) return t.event.listen('tray-eye-break-skip', () => cb());
+    return () => {};
+  },
+
+  onEyeBreakNow: async (cb) => {
+    const t = getTauri();
+    if (t) return t.event.listen('tray-eye-break-now', () => cb());
+    return () => {};
+  },
+
   getTauri,
 };

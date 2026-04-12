@@ -94,6 +94,76 @@ pub async fn clear_history(app: AppHandle) -> Result<(), String> {
     std::fs::write(&path, "[]").map_err(|e| e.to_string())
 }
 
+/// Open a full-screen eye break overlay window.
+///
+/// `strict` - when true, the overlay covers the menu bar and stays until the
+/// break timer ends; the frontend hides skip/snooze controls.
+#[tauri::command]
+pub async fn open_eye_break(
+    app: AppHandle,
+    duration: u32,
+    strict: bool,
+) -> Result<(), String> {
+    use tauri::webview::WebviewWindowBuilder;
+
+    // If already open, just focus it
+    if let Some(win) = app.get_webview_window("eyebreak") {
+        win.set_focus().map_err(|e| e.to_string())?;
+        return Ok(());
+    }
+
+    // Get the monitor size for full-screen overlay
+    let monitor = app
+        .primary_monitor()
+        .map_err(|e| e.to_string())?
+        .ok_or("No primary monitor")?;
+    let size = monitor.size();
+    let scale = monitor.scale_factor();
+    let w = size.width as f64 / scale;
+    let h = size.height as f64 / scale;
+
+    // Pass duration + strict to the overlay via URL query params
+    let url = format!("eyebreak?duration={}&strict={}", duration, strict);
+
+    let win = WebviewWindowBuilder::new(
+        &app,
+        "eyebreak",
+        tauri::WebviewUrl::App(url.into()),
+    )
+    .title("")
+    .inner_size(w, h)
+    .position(0.0, 0.0)
+    .decorations(false)
+    .resizable(false)
+    .always_on_top(true)
+    .transparent(true)
+    .skip_taskbar(true)
+    .focused(true)
+    .build()
+    .map_err(|e| e.to_string())?;
+
+    // In strict mode on macOS, raise above the menu bar so the user can't
+    // easily click away. Otherwise leave at normal always-on-top level.
+    #[cfg(target_os = "macos")]
+    {
+        if strict {
+            crate::platform::set_above_menu_bar(&win);
+            crate::platform::activate_app_for_input();
+        }
+    }
+
+    Ok(())
+}
+
+/// Close the eye break overlay window.
+#[tauri::command]
+pub async fn close_eye_break(app: AppHandle) -> Result<(), String> {
+    if let Some(win) = app.get_webview_window("eyebreak") {
+        win.close().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 /// Register the global Cmd+Shift+F shortcut to toggle the popover.
 pub fn register_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
