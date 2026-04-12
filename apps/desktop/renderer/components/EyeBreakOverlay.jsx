@@ -10,7 +10,18 @@ function EyeIcon({ className }) {
   );
 }
 
-export default function EyeBreakOverlay({ isActive, breakTimeLeft, onDismiss, onSnooze, palIcon }) {
+export default function EyeBreakOverlay({
+  isActive,
+  breakTimeLeft,
+  totalDuration = 20,
+  strict = false,
+  onDismiss,
+  onSnooze,
+  palIcon,
+}) {
+  const ringCirc = 2 * Math.PI * 42;
+  const ringOffset = ringCirc * (1 - Math.max(0, breakTimeLeft) / Math.max(1, totalDuration));
+
   return (
     <AnimatePresence>
       {isActive && (
@@ -19,7 +30,7 @@ export default function EyeBreakOverlay({ isActive, breakTimeLeft, onDismiss, on
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
+          className="fixed inset-0 z-9999 flex flex-col items-center justify-center"
           style={{ background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)' }}
         >
           {/* Ambient glow */}
@@ -35,7 +46,7 @@ export default function EyeBreakOverlay({ isActive, breakTimeLeft, onDismiss, on
             transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }}
             className="relative z-10 flex flex-col items-center text-center px-8"
           >
-            {/* Pal icon with breathing animation */}
+            {/* Pal icon */}
             <motion.div
               className="text-5xl mb-6"
               animate={{ scale: [1, 1.08, 1] }}
@@ -61,15 +72,15 @@ export default function EyeBreakOverlay({ isActive, breakTimeLeft, onDismiss, on
             </p>
 
             {/* Countdown ring */}
-            <div className="relative w-24 h-24 mb-8">
-              <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+            <div className="relative w-28 h-28 mb-8">
+              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 96 96">
                 <circle cx="48" cy="48" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
                 <motion.circle
                   cx="48" cy="48" r="42" fill="none"
                   stroke="url(#breakGradient)" strokeWidth="4"
                   strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 42}
-                  animate={{ strokeDashoffset: 2 * Math.PI * 42 * (1 - breakTimeLeft / 20) }}
+                  strokeDasharray={ringCirc}
+                  animate={{ strokeDashoffset: ringOffset }}
                   transition={{ duration: 0.5 }}
                 />
                 <defs>
@@ -86,30 +97,36 @@ export default function EyeBreakOverlay({ isActive, breakTimeLeft, onDismiss, on
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onDismiss}
-                className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
-                style={{ background: 'rgba(255,255,255,0.08)' }}
-              >
-                Skip
-              </button>
-              <button
-                onClick={() => onSnooze(5)}
-                className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
-                style={{ background: 'rgba(255,255,255,0.08)' }}
-              >
-                +5 min
-              </button>
-              <button
-                onClick={() => onSnooze(15)}
-                className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
-                style={{ background: 'rgba(255,255,255,0.08)' }}
-              >
-                +15 min
-              </button>
-            </div>
+            {/* Actions — hidden in strict mode */}
+            {strict ? (
+              <p className="text-[11px] text-white/40 tracking-wide uppercase">
+                Strict mode · please rest your eyes
+              </p>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onDismiss}
+                  className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={() => onSnooze(5)}
+                  className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
+                >
+                  +5 min
+                </button>
+                <button
+                  onClick={() => onSnooze(15)}
+                  className="px-5 py-2 rounded-full text-sm font-medium text-white/70 hover:text-white transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
+                >
+                  +15 min
+                </button>
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
