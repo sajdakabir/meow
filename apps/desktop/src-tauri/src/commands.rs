@@ -95,8 +95,15 @@ pub async fn clear_history(app: AppHandle) -> Result<(), String> {
 }
 
 /// Open a full-screen eye break overlay window.
+///
+/// `strict` - when true, the overlay covers the menu bar and stays until the
+/// break timer ends; the frontend hides skip/snooze controls.
 #[tauri::command]
-pub async fn open_eye_break(app: AppHandle) -> Result<(), String> {
+pub async fn open_eye_break(
+    app: AppHandle,
+    duration: u32,
+    strict: bool,
+) -> Result<(), String> {
     use tauri::webview::WebviewWindowBuilder;
 
     // If already open, just focus it
@@ -115,10 +122,13 @@ pub async fn open_eye_break(app: AppHandle) -> Result<(), String> {
     let w = size.width as f64 / scale;
     let h = size.height as f64 / scale;
 
-    let _win = WebviewWindowBuilder::new(
+    // Pass duration + strict to the overlay via URL query params
+    let url = format!("eyebreak?duration={}&strict={}", duration, strict);
+
+    let win = WebviewWindowBuilder::new(
         &app,
         "eyebreak",
-        tauri::WebviewUrl::App("eyebreak".into()),
+        tauri::WebviewUrl::App(url.into()),
     )
     .title("")
     .inner_size(w, h)
@@ -128,8 +138,19 @@ pub async fn open_eye_break(app: AppHandle) -> Result<(), String> {
     .always_on_top(true)
     .transparent(true)
     .skip_taskbar(true)
+    .focused(true)
     .build()
     .map_err(|e| e.to_string())?;
+
+    // In strict mode on macOS, raise above the menu bar so the user can't
+    // easily click away. Otherwise leave at normal always-on-top level.
+    #[cfg(target_os = "macos")]
+    {
+        if strict {
+            crate::platform::set_above_menu_bar(&win);
+            crate::platform::activate_app_for_input();
+        }
+    }
 
     Ok(())
 }
