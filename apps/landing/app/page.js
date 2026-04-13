@@ -170,7 +170,7 @@ function FAQItem({ q, a, index }) {
 }
 
 // ── Notch / Dynamic Island ──
-function Notch() {
+function Notch({ onTriggerEyeBreak, eyeBreakActive }) {
   const [expanded, setExpanded] = useState(false);
   const notchRef = useRef(null);
 
@@ -306,7 +306,7 @@ function Notch() {
               )}
             </div>
 
-            <div className="px-3 pb-3 flex gap-2">
+            <div className="px-3 pb-2 flex gap-2">
               <button
                 onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); }}
                 className="flex-1 bg-[#2a2a2a] hover:bg-[#333] rounded-2xl px-4 py-2.5 flex items-center gap-2.5 transition-colors"
@@ -324,6 +324,17 @@ function Notch() {
                 }`}>
                   {activeCount > 0 ? 'ON' : 'OFF'}
                 </span>
+              </button>
+            </div>
+
+            <div className="px-3 pb-3">
+              <button
+                onClick={() => { onTriggerEyeBreak?.(); setShowPalPicker(false); setShowSounds(false); }}
+                disabled={eyeBreakActive}
+                className="w-full bg-[#2a2a2a] hover:bg-[#333] disabled:opacity-60 rounded-2xl px-4 py-2.5 flex items-center gap-2.5 transition-colors"
+              >
+                <span className="text-sm text-[#a0a0a0] font-medium">Eye Break</span>
+                <span className="text-[11px] text-[#666] ml-auto tabular-nums">try it →</span>
               </button>
             </div>
 
@@ -395,7 +406,36 @@ function Notch() {
 }
 
 // ── Mac Screen ──
+const DEMO_BREAK_DURATION = 5; // keep short so visitors see it finish quickly
+
 function MacScreen() {
+  const [eyeBreakActive, setEyeBreakActive] = useState(false);
+  const [breakTimeLeft, setBreakTimeLeft] = useState(DEMO_BREAK_DURATION);
+
+  const triggerEyeBreak = () => {
+    setBreakTimeLeft(DEMO_BREAK_DURATION);
+    setEyeBreakActive(true);
+  };
+
+  const dismissEyeBreak = () => setEyeBreakActive(false);
+
+  useEffect(() => {
+    if (!eyeBreakActive) return;
+    const id = setInterval(() => {
+      setBreakTimeLeft((t) => {
+        if (t <= 1) {
+          setEyeBreakActive(false);
+          return DEMO_BREAK_DURATION;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [eyeBreakActive]);
+
+  const ringCirc = 2 * Math.PI * 42;
+  const ringOffset = ringCirc * (1 - breakTimeLeft / DEMO_BREAK_DURATION);
+
   return (
     <div>
       <div className="flex justify-center mb-4">
@@ -419,11 +459,11 @@ function MacScreen() {
             draggable={false}
           />
 
-          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 h-7 bg-white/30 backdrop-blur-xl">
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 h-7 bg-white/30 backdrop-blur-xl z-20">
             <svg width="12" height="15" viewBox="0 0 170 200" fill="black" className="opacity-70">
               <path d="M150.4 68.2c-1.2.9-21.7 12.5-21.7 38.2 0 29.8 26.1 40.3 26.9 40.6-.1.6-4.2 14.4-13.8 28.5-8.6 12.4-17.5 24.7-31.2 24.7s-17.2-7.9-32.9-7.9c-15.4 0-20.8 8.2-33.3 8.2s-21.5-11.3-31.2-25C3.7 160.7 0 132.2 0 105.2c0-43.2 28.1-66.1 55.8-66.1 14.7 0 27 9.7 36.2 9.7 8.9 0 23-10.3 39.8-10.3 6.4 0 29.3.5 44.6 20.7zM113.1 32c6.3-7.7 10.7-18.3 10.7-29 0-1.5-.1-3-.4-4.2C113.2 0 100.7 8.3 93.7 17.3c-5.4 6.9-10.8 17.5-10.8 28.2 0 1.6.2 3.3.3 3.7.6.1 1.7.3 2.7.3 9.4 0 117.5-37.3 148.7-87.9z"/>
             </svg>
-            <Notch />
+            <Notch onTriggerEyeBreak={triggerEyeBreak} eyeBreakActive={eyeBreakActive} />
             <div className="flex items-center gap-2.5">
               <svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50">
                 <path d="M2 8.5a14 14 0 0120 0" />
@@ -437,6 +477,83 @@ function MacScreen() {
               </svg>
             </div>
           </div>
+
+          {/* Eye break overlay inside the Mac screen */}
+          <AnimatePresence>
+            {eyeBreakActive && (
+              <motion.button
+                type="button"
+                onClick={dismissEyeBreak}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%)' }}
+                aria-label="Dismiss eye break"
+              >
+                <div
+                  className="absolute top-1/4 left-1/4 w-40 h-40 rounded-full pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)' }}
+                />
+                <div
+                  className="absolute bottom-1/4 right-1/4 w-32 h-32 rounded-full pointer-events-none"
+                  style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.18) 0%, transparent 70%)' }}
+                />
+
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ delay: 0.15, type: 'spring', stiffness: 200, damping: 20 }}
+                  className="relative flex flex-col items-center"
+                >
+                  <motion.div
+                    className="text-3xl mb-2"
+                    animate={{ scale: [1, 1.08, 1] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    🐱
+                  </motion.div>
+                  <motion.svg
+                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+                    className="text-indigo-300 mb-2"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  >
+                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                    <circle cx="12" cy="12" r="3" />
+                  </motion.svg>
+                  <h3 className="text-lg font-semibold text-white mb-1">Look away</h3>
+                  <p className="text-[11px] text-white/50 mb-3 max-w-48">
+                    Focus on something 20 feet away
+                  </p>
+                  <div className="relative w-16 h-16">
+                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 96 96">
+                      <circle cx="48" cy="48" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4" />
+                      <motion.circle
+                        cx="48" cy="48" r="42" fill="none"
+                        stroke="url(#notchBreakGradient)" strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={ringCirc}
+                        animate={{ strokeDashoffset: ringOffset }}
+                        transition={{ duration: 0.5 }}
+                      />
+                      <defs>
+                        <linearGradient id="notchBreakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#6366f1" />
+                          <stop offset="100%" stopColor="#34d399" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xl font-bold text-white tabular-nums">{breakTimeLeft}</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-white/30 mt-4 uppercase tracking-wide">click to dismiss · demo</p>
+                </motion.div>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
