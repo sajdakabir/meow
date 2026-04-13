@@ -86,6 +86,37 @@ const FEATURES = [
     title: 'Focus Pals',
     desc: 'Choose from adorable companions — Luna, Rusty, Hoot, Bamboo, or Clover — to keep you company while you work.',
   },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    ),
+    title: 'Eye Break Reminders',
+    desc: 'Gentle 20-20-20 rule nudges to rest your eyes. Optional strict mode covers the screen so you actually take the break.',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8v4l3 3" />
+        <circle cx="12" cy="12" r="10" />
+        <path d="M3.05 11a9 9 0 1 1 .5 4" />
+      </svg>
+    ),
+    title: 'Session History',
+    desc: 'Every focus session is logged locally with its task, duration, and pal. Review your day anytime from the tray menu.',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2" ry="2" />
+        <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
+      </svg>
+    ),
+    title: 'Global Shortcut',
+    desc: 'Hit ⌘⇧F from anywhere to pop the timer open. No trip to the menu bar, no breaking flow.',
+  },
 ];
 
 const TESTIMONIALS = [
@@ -734,39 +765,6 @@ export default function Home() {
             {FEATURES.map((f, i) => (
               <FeatureCard key={f.title} {...f} index={i} />
             ))}
-
-            {/* Featured: Eye Break Reminders — spans 2 columns on wide screens */}
-            <FadeIn delay={FEATURES.length * 0.08} className="sm:col-span-2 lg:col-span-2">
-              <div className="group relative h-full p-6 rounded-2xl bg-linear-to-br from-emerald-50 via-white to-indigo-50 border border-emerald-100/80 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/50 transition-all duration-300 overflow-hidden">
-                {/* Decorative glow */}
-                <div
-                  className="absolute -top-8 -right-8 w-40 h-40 rounded-full pointer-events-none"
-                  style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.18) 0%, transparent 70%)' }}
-                />
-                <div
-                  className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full pointer-events-none"
-                  style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 70%)' }}
-                />
-
-                <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
-                  <div className="w-12 h-12 rounded-xl bg-linear-to-br from-emerald-100 to-indigo-100 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-110 transition-transform duration-300">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="text-gray-900 font-semibold text-[15px]">Eye Break Reminders</h3>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-100/80 px-1.5 py-0.5 rounded">New</span>
-                    </div>
-                    <p className="text-gray-500 text-sm leading-relaxed">
-                      Gentle 20-20-20 rule nudges to rest your eyes. Optional strict mode covers the screen so you actually take the break.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
           </div>
         </div>
       </section>
