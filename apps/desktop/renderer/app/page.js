@@ -749,7 +749,7 @@ export default function Home() {
                       <div className="text-sm font-semibold text-white">meow</div>
                       <div className="text-[11px] text-text-muted mt-0.5">v1.2.0</div>
                       <p className="text-[11px] text-text-muted mt-2 leading-relaxed">
-                        Focus mode. Made delightful.<br />
+                        Stay focused. Stay cozy.<br />
                         Ambient sounds, a timer, and an adorable companion — tucked into your menu bar.
                       </p>
                       <div className="flex items-center justify-center gap-3 mt-3">

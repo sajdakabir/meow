@@ -1,7 +1,7 @@
 {
   "name": "meow-desktop",
   "version": "1.2.0",
-  "description": "Focus mode. Made delightful. A desktop productivity app with Pomodoro timer, ambient sounds, and focus companions.",
+  "description": "Stay focused. Stay cozy. A menu-bar productivity app with a Pomodoro timer, ambient sounds, focus pals, and eye-break reminders.",
   "scripts": {
     "next-dev": "next dev -p 3459 renderer",
     "next-build": "next build renderer",

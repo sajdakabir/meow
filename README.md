@@ -1,8 +1,8 @@
 # meow
 
-**Focus mode. Made delightful.**
+**Stay focused. Stay cozy.**
 
-A desktop productivity app with a Pomodoro timer, ambient sounds, and cute animal companions to keep you company while you work.
+A menu-bar productivity app with a Pomodoro timer, ambient sounds, cute animal companions, and eye-break reminders to keep you company while you work.
 
 ## Apps
 

@@ -955,7 +955,7 @@ export default function Home() {
                 <span className="text-lg font-bold tracking-tight text-gray-900">meow</span>
               </div>
               <p className="text-sm text-gray-400 leading-relaxed">
-                Focus mode. Made delightful.<br />
+                Stay focused. Stay cozy.<br />
                 Free & open source for macOS.
               </p>
             </div>
