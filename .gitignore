@@ -36,3 +36,9 @@ npm-debug.log*
 
 # Plan
 plan.md
+
+# GIF generation artifacts
+scripts/gif/frames/
+scripts/gif/palette.png
+scripts/gif/notch-reveal.gif
+scripts/gif/node_modules/

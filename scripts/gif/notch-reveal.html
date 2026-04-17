@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>meow notch reveal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500&display=swap');
+
+  html, body { margin: 0; padding: 0; background: #FAF7F2; }
+  body { font-family: 'Inter', sans-serif; padding: 40px; }
+
+  .m-wrap { max-width: 900px; margin: 0 auto; }
+  .m-wrap * { box-sizing: border-box; }
+
+  .m-reveal {
+    background: #F5EFE6;
+    border-radius: 16px;
+    padding: 60px 32px;
+    color: #2C2C2A;
+    position: relative;
+  }
+  .m-reveal-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #88817A;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .m-reveal h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 12px;
+    text-align: center;
+    color: #2C2C2A;
+  }
+  .m-reveal-sub {
+    font-size: 15px;
+    color: #6B645D;
+    text-align: center;
+    max-width: 420px;
+    margin: 0 auto 16px;
+    line-height: 1.6;
+  }
+  .m-hover-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #A39A8E;
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+
+  .m-stage {
+    background: #E8DCC8;
+    border-radius: 14px;
+    padding: 40px 20px 60px;
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .m-trigger {
+    background: #000;
+    border-radius: 0 0 14px 14px;
+    padding: 6px 14px 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  .m-cat-face { font-size: 16px; line-height: 1; }
+  .m-timer-digits {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #F5EFE6;
+    font-size: 13px;
+  }
+
+  .m-panel {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px) scale(0.92);
+    background: #1A1F2E;
+    color: #F5EFE6;
+    border-radius: 16px;
+    padding: 14px;
+    width: 300px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+  .m-stage:hover .m-panel {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  .m-stage:hover .m-trigger { opacity: 0.3; }
+
+  .m-row { display: grid; gap: 8px; margin-bottom: 8px; }
+  .m-row-2 { grid-template-columns: 1fr 1fr; }
+  .m-row-timer { grid-template-columns: 2fr 48px; }
+
+  .m-cell {
+    background: #252B3D;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .m-cell-minutes {
+    background: #F5EFE6; color: #1A1F2E;
+    padding: 4px 8px; border-radius: 7px;
+    font-weight: 500; font-size: 12px;
+  }
+  .m-cell-task { font-size: 12px; opacity: 0.5; }
+  .m-play {
+    background: #252B3D; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #F5EFE6;
+  }
+  .m-toggle-off { opacity: 0.5; font-size: 11px; }
+  .m-toggle-on {
+    background: #7FB069; color: #0C2E0F;
+    padding: 2px 7px; border-radius: 5px;
+    font-size: 10px; font-weight: 500;
+  }
+  .m-eye-time { opacity: 0.5; font-size: 12px; margin-right: 6px; }
+
+  .m-callout {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #E8DCC8;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #2C2C2A;
+    opacity: 0;
+    transition: opacity 0.4s ease 0.25s;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .m-callout::before {
+    content: '';
+    position: absolute;
+    width: 24px; height: 1px;
+    background: #C7B89F;
+  }
+  .m-callout-label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: #88817A;
+    font-size: 11px;
+    display: block;
+  }
+  .m-stage:hover .m-callout { opacity: 1; }
+
+  .m-c1 { top: 95px; left: calc(50% - 260px); }
+  .m-c1::before { right: -20px; top: 50%; }
+  .m-c2 { top: 165px; left: calc(50% + 175px); }
+  .m-c2::before { left: -20px; top: 50%; }
+  .m-c3 { top: 165px; left: calc(50% - 280px); }
+  .m-c3::before { right: -20px; top: 50%; }
+  .m-c4 { top: 235px; left: calc(50% + 175px); }
+  .m-c4::before { left: -20px; top: 50%; }
+</style>
+</head>
+<body>
+  <div class="m-wrap">
+    <section class="m-reveal">
+      <div class="m-reveal-eyebrow">One hover away</div>
+      <h2>Hover the cat. Everything&rsquo;s&nbsp;there.</h2>
+      <p class="m-reveal-sub">Timer, music, focus pal, eye breaks &mdash; all in one gentle motion.</p>
+      <div class="m-hover-hint">&darr; hover the notch below &darr;</div>
+
+      <div class="m-stage" id="stage">
+        <div class="m-trigger">
+          <span class="m-cat-face">🐱</span>
+          <span class="m-timer-digits">25:00</span>
+        </div>
+
+        <div class="m-panel">
+          <div class="m-row m-row-timer">
+            <div class="m-cell">
+              <span class="m-cell-minutes">25 min</span>
+              <span class="m-cell-task">Task (optional)</span>
+            </div>
+            <div class="m-play">&#9654;</div>
+          </div>
+          <div class="m-row m-row-2">
+            <div class="m-cell"><span>Focus Pal</span><span>🐱</span></div>
+            <div class="m-cell"><span>Music</span><span class="m-toggle-off">OFF</span></div>
+          </div>
+          <div class="m-cell">
+            <span>Eye Break</span>
+            <span><span class="m-eye-time">17:17</span><span class="m-toggle-on">ON</span></span>
+          </div>
+        </div>
+
+        <div class="m-callout m-c1">
+          <span class="m-callout-label">Timer</span>
+          Pomodoro or simple countdown
+        </div>
+        <div class="m-callout m-c2">
+          <span class="m-callout-label">Focus Pal</span>
+          Cute companions
+        </div>
+        <div class="m-callout m-c3">
+          <span class="m-callout-label">Music</span>
+          Ambient sounds
+        </div>
+        <div class="m-callout m-c4">
+          <span class="m-callout-label">Eye Break</span>
+          20-20-20 reminders
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
