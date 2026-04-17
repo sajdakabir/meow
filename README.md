@@ -4,6 +4,8 @@
 
 A menu-bar productivity app with a Pomodoro timer, ambient sounds, cute animal companions, and eye-break reminders to keep you company while you work.
 
+![meow — hover the cat, everything's there](.github/assets/notch-reveal.gif)
+
 ## Apps
 
 | App | Description |
@@ -15,7 +17,9 @@ A menu-bar productivity app with a Pomodoro timer, ambient sounds, cute animal c
 
 - **Pomodoro Timer** — 25/5/15 minute cycles with visual progress ring and auto-cycling between focus and break sessions
 - **Ambient Sounds** — 8 mixable soundscapes (Rain, Forest, Ocean, Fireplace, Cafe, Wind, Birds, Thunder) with individual volume controls
-- **Focus Pals** — 6 animated animal companions (Cat, Fox, Owl, Panda, Bear, Bunny) that react to your timer state
+- **Focus Pals** — Animated animal companions (Luna, Rusty, Hoot, Bamboo, Clover) that react to your timer state
+- **Eye Break Reminders** — 20-20-20 rule nudges to rest your eyes, with optional strict mode that covers the screen
+- **Session History** — Every focus session logged locally
 - **System Tray** — Lives in your menu bar with quick controls
 - **Always on Top** — Stays visible while you work
 - **Desktop Notifications** — Alerts when sessions complete
