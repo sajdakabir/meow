@@ -1,6 +1,6 @@
 {
   "name": "meow-desktop",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Stay focused. Stay cozy. A menu-bar productivity app with a Pomodoro timer, ambient sounds, focus pals, and eye-break reminders.",
   "scripts": {
     "next-dev": "next dev -p 3459 renderer",
