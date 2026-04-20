@@ -20,6 +20,14 @@ export function useEyeBreak({ onBreakDue, onBreakEnd } = {}) {
   const breakTimerRef = useRef(null);
   const snoozedUntilRef = useRef(0);
 
+  // Keep latest callbacks in refs so interval effects don't tear down
+  // and rebuild on every parent re-render (which would freeze the countdown
+  // when the parent renders faster than 1Hz, e.g. while the focus timer ticks).
+  const onBreakDueRef = useRef(onBreakDue);
+  const onBreakEndRef = useRef(onBreakEnd);
+  useEffect(() => { onBreakDueRef.current = onBreakDue; }, [onBreakDue]);
+  useEffect(() => { onBreakEndRef.current = onBreakEnd; }, [onBreakEnd]);
+
   // Load settings from localStorage
   useEffect(() => {
     try {
@@ -47,8 +55,8 @@ export function useEyeBreak({ onBreakDue, onBreakEnd } = {}) {
     setIsBreakActive(true);
     setBreakTimeLeft(settings.breakDurationSeconds);
     setTimeSinceLastBreak(0);
-    onBreakDue?.();
-  }, [settings.breakDurationSeconds, onBreakDue]);
+    onBreakDueRef.current?.();
+  }, [settings.breakDurationSeconds]);
 
   // End / dismiss the break
   const dismissBreak = useCallback(() => {
@@ -59,8 +67,8 @@ export function useEyeBreak({ onBreakDue, onBreakEnd } = {}) {
     setIsBreakActive(false);
     setBreakTimeLeft(0);
     setTimeSinceLastBreak(0);
-    onBreakEnd?.();
-  }, [onBreakEnd]);
+    onBreakEndRef.current?.();
+  }, []);
 
   // Snooze — delay next break by N minutes
   const snooze = useCallback((minutes) => {
@@ -90,7 +98,7 @@ export function useEyeBreak({ onBreakDue, onBreakEnd } = {}) {
     };
   }, [isBreakActive, dismissBreak]);
 
-  // Main interval — tick every second, trigger break when interval reached
+  // Main interval — tick every second whenever the feature is enabled.
   useEffect(() => {
     if (!settings.enabled || isBreakActive) {
       if (intervalRef.current) {
