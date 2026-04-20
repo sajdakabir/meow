@@ -292,10 +292,34 @@ export default function Home() {
               {/* Notch gap — transparent spacer for the physical notch */}
               <div style={{ width: 170, flexShrink: 0 }} />
 
-              {/* Right wing — timer only */}
-              <span className="text-[12px] font-semibold tabular-nums text-white/90">
-                {timerDisplay}
-              </span>
+              {/* Right wing — focus timer + eye break countdown.
+                  Focus time shows whenever it's active (running or paused
+                  mid-session). Eye break time shows whenever enabled.
+                  If neither is "active", fall back to the focus time so
+                  the notch is never empty. */}
+              {(() => {
+                const focusActive = timer.isRunning || timer.timeLeft < timer.totalTime;
+                const showEye = eyeBreak.settings.enabled;
+                const showFocus = focusActive || !showEye;
+                return (
+                  <div className="flex items-center gap-2">
+                    {showFocus && (
+                      <span className="text-[13px] font-semibold tabular-nums text-white">
+                        {timerDisplay}
+                      </span>
+                    )}
+                    {showEye && (
+                      <span
+                        className="text-[13px] font-semibold tabular-nums"
+                        style={{ color: '#4ade80' }}
+                        title={`Next eye break in ${eyeBreak.nextBreakDisplay}`}
+                      >
+                        {eyeBreak.nextBreakDisplay}
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </motion.div>
           ) : (
             /* ── Expanded card ── */
