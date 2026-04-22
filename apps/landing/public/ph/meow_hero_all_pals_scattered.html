@@ -1,0 +1,168 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.meow-hero-wrap {
+  font-family: 'Inter', sans-serif;
+  background: #F5EFE6;
+  padding: 24px;
+  border-radius: 16px;
+}
+
+.meow-hero-card {
+  position: relative;
+  background: #FAF5EC;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
+  padding: 80px 40px 100px;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 620px;
+}
+
+.meow-hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(0,0,0,0.4) 0.5px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(0,0,0,0.3) 0.5px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(0,0,0,0.35) 0.5px, transparent 1px),
+    radial-gradient(circle at 85% 20%, rgba(0,0,0,0.3) 0.5px, transparent 1px),
+    radial-gradient(circle at 15% 75%, rgba(0,0,0,0.4) 0.5px, transparent 1px),
+    radial-gradient(circle at 55% 45%, rgba(0,0,0,0.25) 0.5px, transparent 1px);
+  background-size: 37px 37px, 53px 53px, 71px 71px, 43px 43px, 61px 61px, 29px 29px;
+  opacity: 0.5;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.meow-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  z-index: 2;
+}
+.meow-blob-peach { width: 280px; height: 280px; background: #F4A261; top: 45%; left: 30%; }
+.meow-blob-sage { width: 260px; height: 260px; background: #A3C9A8; top: 20%; left: 65%; }
+.meow-blob-cream { width: 220px; height: 220px; background: #E8C9A5; top: 60%; left: 70%; }
+
+.meow-ghost-pal {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  line-height: 1;
+  font-size: 80px;
+  filter: grayscale(0.7) blur(0.5px);
+}
+
+.meow-waves {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.meow-hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+}
+.meow-wordmark {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  font-size: clamp(96px, 16vw, 200px);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: #0A0A0A;
+  margin: 0 0 28px;
+}
+.meow-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(18px, 3vw, 32px);
+  font-weight: 500;
+  color: #1A1F2E;
+  margin: 0 0 40px;
+  letter-spacing: -0.01em;
+}
+.meow-highlight {
+  background: #F4A261;
+  color: #1A1F2E;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.meow-meta {
+  position: absolute; top: 20px; left: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: rgba(0,0,0,0.4); z-index: 10;
+}
+.meow-meta-right {
+  position: absolute; top: 20px; right: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: rgba(0,0,0,0.4); z-index: 10;
+}
+.meow-bottom-tag {
+  position: absolute; bottom: 24px; left: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: rgba(0,0,0,0.5); z-index: 10;
+}
+.meow-bottom-tag-right {
+  position: absolute; bottom: 24px; right: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: rgba(0,0,0,0.5); z-index: 10;
+}
+</style>
+
+<div class="meow-hero-wrap">
+  <div class="meow-hero-card">
+
+    <div class="meow-meta">v1.0.0 · macOS</div>
+    <div class="meow-meta-right">free &amp; open source</div>
+
+    <div class="meow-blob meow-blob-peach"></div>
+    <div class="meow-blob meow-blob-sage"></div>
+    <div class="meow-blob meow-blob-cream"></div>
+
+    <div class="meow-ghost-pal" style="top: 6%; left: 6%; transform: rotate(-12deg); opacity: 0.22; font-size: 110px;">🐱</div>
+    <div class="meow-ghost-pal" style="top: 10%; right: 7%; transform: rotate(15deg); opacity: 0.2; font-size: 95px;">🦊</div>
+    <div class="meow-ghost-pal" style="top: 52%; left: 4%; transform: rotate(8deg); opacity: 0.18; font-size: 85px;">🦉</div>
+    <div class="meow-ghost-pal" style="bottom: 20%; right: 5%; transform: rotate(-6deg); opacity: 0.22; font-size: 130px;">🐼</div>
+    <div class="meow-ghost-pal" style="top: 42%; left: 38%; transform: rotate(20deg); opacity: 0.14; font-size: 65px;">🐰</div>
+    <div class="meow-ghost-pal" style="bottom: 32%; left: 26%; transform: rotate(-18deg); opacity: 0.16; font-size: 70px;">🐻</div>
+    <div class="meow-ghost-pal" style="top: 25%; left: 48%; transform: rotate(-8deg); opacity: 0.1; font-size: 55px;">🦊</div>
+    <div class="meow-ghost-pal" style="bottom: 38%; right: 30%; transform: rotate(10deg); opacity: 0.12; font-size: 60px;">🐱</div>
+
+    <div class="meow-hero-content">
+      <h1 class="meow-wordmark">meow</h1>
+      <p class="meow-tagline">
+        Focus. <span class="meow-highlight">Cozy.</span> Shipped.
+      </p>
+    </div>
+
+    <svg class="meow-waves" viewBox="0 0 1000 180" preserveAspectRatio="none">
+      <path d="M0,120 Q125,80 250,110 T500,100 T750,115 T1000,95 L1000,180 L0,180 Z" fill="none" stroke="#1A1F2E" stroke-width="0.5" opacity="0.5"/>
+      <path d="M0,135 Q125,95 250,125 T500,115 T750,130 T1000,110 L1000,180 L0,180 Z" fill="none" stroke="#1A1F2E" stroke-width="0.5" opacity="0.4"/>
+      <path d="M0,150 Q125,110 250,140 T500,130 T750,145 T1000,125 L1000,180 L0,180 Z" fill="none" stroke="#1A1F2E" stroke-width="0.5" opacity="0.3"/>
+      <g opacity="0.4">
+        <line x1="0" y1="100" x2="1000" y2="100" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="0" y1="120" x2="1000" y2="120" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="0" y1="140" x2="1000" y2="140" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="100" y1="80" x2="100" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="200" y1="80" x2="200" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="300" y1="80" x2="300" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="400" y1="80" x2="400" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="500" y1="80" x2="500" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="600" y1="80" x2="600" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="700" y1="80" x2="700" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="800" y1="80" x2="800" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+        <line x1="900" y1="80" x2="900" y2="180" stroke="#1A1F2E" stroke-width="0.3"/>
+      </g>
+    </svg>
+
+    <div class="meow-bottom-tag">built with tauri · 11mb</div>
+    <div class="meow-bottom-tag-right">by @sajdakabir</div>
+
+  </div>
+</div>

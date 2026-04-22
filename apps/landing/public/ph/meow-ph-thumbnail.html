@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>meow — PH thumbnail</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #E8DCC8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  }
+
+  /* EXACT 240 × 240 for Product Hunt thumbnail */
+  .thumb {
+    width: 240px;
+    height: 240px;
+    border-radius: 52px;
+    background: radial-gradient(circle at 50% 50%, #F4A261 0%, #F0C999 38%, #E8DCC8 75%);
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    box-sizing: border-box;
+  }
+
+  /* Subtle paper grain */
+  .thumb::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 30% 30%, rgba(0,0,0,0.18) 0.5px, transparent 1px),
+      radial-gradient(circle at 70% 70%, rgba(0,0,0,0.15) 0.5px, transparent 1px);
+    background-size: 20px 20px, 28px 28px;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 36px;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 10px 30px rgba(244, 162, 97, 0.35);
+  }
+
+  .inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Small helper caption — not part of export */
+  .caption {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: ui-monospace, "JetBrains Mono", Consolas, monospace;
+    font-size: 11px;
+    color: #88817A;
+    letter-spacing: 0.08em;
+  }
+</style>
+</head>
+<body>
+
+  <div class="thumb" id="phThumb">
+    <div class="inner">
+      <img src="https://meow.sajdakabir.com/image.png" alt="meow logo" />
+    </div>
+  </div>
+
+  <div class="caption">240 × 240 · right-click the thumbnail to inspect/capture</div>
+
+</body>
+</html>

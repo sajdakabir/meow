@@ -1,0 +1,208 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.h-wrap { font-family: 'Inter', sans-serif; max-width: 100%; }
+.h-wrap * { box-sizing: border-box; }
+
+.h-hero {
+  background: linear-gradient(180deg, #0F1519 0%, #1A2420 60%, #243028 100%);
+  border-radius: 16px;
+  padding: 60px 32px 70px;
+  text-align: center;
+  color: #F5EFE6;
+  position: relative;
+  overflow: hidden;
+}
+.h-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245,239,230,0.55);
+  margin-bottom: 20px;
+}
+.h-hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 16px;
+  color: #F5EFE6;
+}
+.h-sub {
+  font-size: 16px;
+  color: rgba(245,239,230,0.7);
+  margin: 0 auto 32px;
+  max-width: 440px;
+  line-height: 1.6;
+}
+.h-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F5EFE6;
+  color: #1A1F2E;
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-decoration: none;
+}
+.h-cta:hover { transform: translateY(-1px); }
+
+.h-notch-bar {
+  margin: 56px auto 16px;
+  background: #000;
+  border-radius: 0 0 16px 16px;
+  max-width: 520px;
+  height: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.h-notch-pill {
+  background: #1A1F2E;
+  padding: 6px 14px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  position: relative;
+  top: 2px;
+  transition: background 0.3s ease;
+}
+.h-cat-face {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #F4A261;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+.h-cat-face.h-bounce {
+  animation: h-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+@keyframes h-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.h-timer-digits {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.h-caption {
+  font-size: 12px;
+  color: rgba(245,239,230,0.5);
+  font-style: italic;
+  margin-bottom: 28px;
+}
+
+/* Pal picker */
+.h-picker-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245,239,230,0.4);
+  margin-bottom: 14px;
+}
+.h-picker {
+  display: inline-flex;
+  gap: 8px;
+  background: rgba(245,239,230,0.06);
+  border: 1px solid rgba(245,239,230,0.1);
+  padding: 8px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+.h-pal-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+  color: inherit;
+  padding: 0;
+}
+.h-pal-btn:hover {
+  background: rgba(245,239,230,0.08);
+  transform: translateY(-2px);
+}
+.h-pal-btn.h-active {
+  background: rgba(127, 119, 221, 0.25);
+  box-shadow: inset 0 0 0 1.5px rgba(127, 119, 221, 0.6);
+}
+</style>
+
+<div class="h-wrap">
+  <section class="h-hero">
+    <div class="h-eyebrow">Focus mode · for macOS</div>
+    <h1>Focus lives in your&nbsp;notch.</h1>
+    <p class="h-sub">A cozy little Mac app. Free and open source.</p>
+    <a class="h-cta" href="#" onclick="return false;">↓&nbsp;&nbsp;Download for Mac</a>
+
+    <div class="h-notch-bar">
+      <div class="h-notch-pill">
+        <span class="h-cat-face" id="heroCatFace">🐱</span>
+        <span class="h-timer-digits">25:00</span>
+      </div>
+    </div>
+    <div class="h-caption">it's that small. promise.</div>
+
+    <div class="h-picker-label">try a different pal</div>
+    <div class="h-picker" id="heroPicker">
+      <button class="h-pal-btn h-active" data-pal="🐱" aria-label="Cat">🐱</button>
+      <button class="h-pal-btn" data-pal="🦊" aria-label="Fox">🦊</button>
+      <button class="h-pal-btn" data-pal="🦉" aria-label="Owl">🦉</button>
+      <button class="h-pal-btn" data-pal="🐼" aria-label="Panda">🐼</button>
+      <button class="h-pal-btn" data-pal="🐰" aria-label="Bunny">🐰</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const picker = document.getElementById('heroPicker');
+  const face = document.getElementById('heroCatFace');
+  if (!picker || !face) return;
+
+  picker.addEventListener('click', function(e){
+    const btn = e.target.closest('.h-pal-btn');
+    if (!btn) return;
+    const pal = btn.getAttribute('data-pal');
+
+    // Update active state
+    picker.querySelectorAll('.h-pal-btn').forEach(function(b){
+      b.classList.remove('h-active');
+    });
+    btn.classList.add('h-active');
+
+    // Swap the face + play the pop animation
+    face.classList.remove('h-bounce');
+    // force reflow so the animation can replay
+    void face.offsetWidth;
+    face.textContent = pal;
+    face.classList.add('h-bounce');
+  });
+})();
+</script>

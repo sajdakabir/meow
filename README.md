@@ -6,6 +6,10 @@ A menu-bar productivity app with a Pomodoro timer, ambient sounds, cute animal c
 
 ![meow — hover the cat, everything's there](.github/assets/notch-reveal.gif)
 
+## Demo
+
+[Watch the demo on YouTube](https://youtu.be/hvV6_gn72TI?si=CexjL_HHqF1iMWdn)
+
 ## Apps
 
 | App | Description |
