@@ -4,7 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { useAudio } from '../hooks/useAudio';
 import { useEyeBreak } from '../hooks/useEyeBreak';
+import { useClaude, formatIdle, formatResetIn, usageColor } from '../hooks/useClaude';
 import { tauriBridge } from '../lib/tauri-bridge';
+
+// Claude's eight-spoke asterisk, drawn small enough to sit in the notch wing.
+function ClaudeMark({ size = 11, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.6" strokeLinecap="round">
+      <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" />
+    </svg>
+  );
+}
 
 // ── Focus Pals ──
 const PALS = [
@@ -23,6 +33,7 @@ export default function Home() {
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showEyeBreak, setShowEyeBreak] = useState(false);
+  const [showClaude, setShowClaude] = useState(false);
   const [taskName, setTaskName] = useState('');
   const [selectedPal, setSelectedPal] = useState(0);
   const [timerMinutes, setTimerMinutes] = useState(25);
@@ -165,6 +176,7 @@ export default function Home() {
       tauriBridge.showNotification('Time for an eye break', 'Look away from screen for 20 seconds');
     },
   });
+  const claude = useClaude();
 
   // Open the overlay window whenever a break starts, passing current settings
   useEffect(() => {
@@ -224,6 +236,7 @@ export default function Home() {
                setShowSounds(false);
         setShowPalPicker(false);
         setShowTimerPicker(false);
+        setShowClaude(false);
       }));
       // Rust → JS: expand or collapse the popover
       unlisteners.push(await tauriBridge.on('popover-expand', () => {
@@ -239,6 +252,7 @@ export default function Home() {
         setShowTimerPicker(false);
         setShowAbout(false);
         setShowEyeBreak(false);
+        setShowClaude(false);
         setTimeout(() => { isCollapsingRef.current = false; }, 300);
       }));
     };
@@ -292,7 +306,7 @@ export default function Home() {
               {/* Notch gap — transparent spacer for the physical notch */}
               <div style={{ width: 170, flexShrink: 0 }} />
 
-              {/* Right wing — focus timer + eye break countdown.
+              {/* Right wing — Claude sessions + focus timer + eye break countdown.
                   Focus time shows whenever it's active (running or paused
                   mid-session). Eye break time shows whenever enabled.
                   If neither is "active", fall back to the focus time so
@@ -301,8 +315,34 @@ export default function Home() {
                 const focusActive = timer.isRunning || timer.timeLeft < timer.totalTime;
                 const showEye = eyeBreak.settings.enabled;
                 const showFocus = focusActive || !showEye;
+                // The session (five-hour) allowance is the number worth a
+                // permanent slot in the notch; everything else lives in the panel.
+                const showClaudeBadge = claude.enabled && claude.sessionLeft != null;
                 return (
                   <div className="flex items-center gap-2">
+                    {showClaudeBadge && (
+                      <button
+                        onClick={() => { setExpanded(true); setShowClaude(true); }}
+                        className="flex items-center gap-1 cursor-pointer"
+                        style={{ color: usageColor(claude.session) }}
+                        title={`Claude session: ${Math.round(claude.sessionLeft)}% left · resets in ${
+                          formatResetIn(claude.session?.resets_at, claude.now) || '—'
+                        }`}
+                      >
+                        <motion.span
+                          className="flex items-center"
+                          animate={claude.workingCount > 0 ? { opacity: [1, 0.45, 1] } : { opacity: 1 }}
+                          transition={claude.workingCount > 0
+                            ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                            : { duration: 0.2 }}
+                        >
+                          <ClaudeMark size={11} />
+                        </motion.span>
+                        <span className="text-[13px] font-semibold tabular-nums">
+                          {Math.round(claude.sessionLeft)}%
+                        </span>
+                      </button>
+                    )}
                     {showFocus && (
                       <span className="text-[13px] font-semibold tabular-nums text-white">
                         {timerDisplay}
@@ -333,7 +373,7 @@ export default function Home() {
               {/* Settings & About */}
               <div className="flex items-center justify-end gap-1 px-4 pt-2.5">
                 <button
-                  onClick={() => { setShowAbout(!showAbout); setShowSettings(false); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowEyeBreak(false); }}
+                  onClick={() => { setShowAbout(!showAbout); setShowSettings(false); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowEyeBreak(false); setShowClaude(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -344,7 +384,7 @@ export default function Home() {
                 </button>
                 <button
                   data-tour="settings-btn"
-                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
+                  onClick={() => { setShowSettings(!showSettings); setShowSounds(false); setShowPalPicker(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); setShowClaude(false); }}
                   className="no-drag w-7 h-7 rounded-full flex items-center justify-center text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -368,6 +408,7 @@ export default function Home() {
                         setShowSounds(false);
                         setShowPalPicker(false);
                         setShowEyeBreak(false);
+                        setShowClaude(false);
                       }
                     }}
                     data-tour="timer-pill"
@@ -443,7 +484,7 @@ export default function Home() {
               <div className="px-4 pb-2 flex gap-2.5">
                 <button
                   data-tour="focus-pal"
-                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
+                  onClick={() => { setShowPalPicker(!showPalPicker); setShowSounds(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); setShowClaude(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -453,7 +494,7 @@ export default function Home() {
 
                 <button
                   data-tour="music-btn"
-                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); }}
+                  onClick={() => { setShowSounds(!showSounds); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowEyeBreak(false); setShowClaude(false); }}
                   className="no-drag flex-1 px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -477,7 +518,7 @@ export default function Home() {
               {/* Eye Break */}
               <div className="px-4 pb-3.5">
                 <button
-                  onClick={() => { setShowEyeBreak(!showEyeBreak); setShowSounds(false); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  onClick={() => { setShowEyeBreak(!showEyeBreak); setShowSounds(false); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); setShowClaude(false); }}
                   className="no-drag w-full px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
                   style={{ background: '#2c2c2e', borderRadius: 16 }}
                 >
@@ -495,6 +536,36 @@ export default function Home() {
                     }`} style={eyeBreak.settings.enabled ? {} : { background: '#3a3a3c' }}
                   >
                     {eyeBreak.settings.enabled ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Claude sessions */}
+              <div className="px-4 pb-3.5">
+                <button
+                  onClick={() => { const opening = !showClaude; setShowClaude(opening); if (opening) claude.refreshUsage(true); setShowEyeBreak(false); setShowSounds(false); setShowPalPicker(false); setShowSettings(false); setShowTimerPicker(false); setShowAbout(false); }}
+                  className="no-drag w-full px-4 py-2.5 flex items-center gap-2.5 hover:bg-bg-hover transition-colors cursor-pointer"
+                  style={{ background: '#2c2c2e', borderRadius: 16 }}
+                >
+                  <span className="text-sm text-text-secondary font-medium">Claude</span>
+                  <span
+                    className="text-[11px] ml-auto tabular-nums"
+                    style={{ color: claude.sessionLeft != null ? usageColor(claude.session) : undefined }}
+                  >
+                    {claude.enabled && claude.sessionLeft != null
+                      ? `${Math.round(claude.sessionLeft)}% left · ${formatResetIn(claude.session?.resets_at, claude.now)}`
+                      : ''}
+                  </span>
+                  <span
+                    onClick={(e) => { e.stopPropagation(); claude.setEnabled(!claude.enabled); }}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-md cursor-pointer ${
+                      claude.enabled ? '' : 'text-text-muted'
+                    }`}
+                    style={claude.enabled
+                      ? { background: 'rgba(217,119,87,0.18)', color: '#e08b6e' }
+                      : { background: '#3a3a3c' }}
+                  >
+                    {claude.enabled ? 'ON' : 'OFF'}
                   </span>
                 </button>
               </div>
@@ -757,6 +828,109 @@ export default function Home() {
                       >
                         Take a break now
                       </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {showClaude && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="p-4 mb-3 space-y-3.5" style={{ background: '#2c2c2e', borderRadius: 16 }}>
+                      <div className="flex items-center gap-2">
+                        <ClaudeMark size={13} color="#d97757" />
+                        <span className="text-xs font-medium text-text-secondary">Plan usage</span>
+                        {claude.plan && (
+                          <span className="text-[10px] text-text-muted ml-auto">{claude.plan}</span>
+                        )}
+                      </div>
+
+                      {!claude.enabled ? (
+                        <p className="text-[10px] text-text-muted leading-relaxed">
+                          Turn this on to see how much of your Claude plan is left.
+                        </p>
+                      ) : claude.usageError ? (
+                        <p className="text-[10px] text-text-muted leading-relaxed">
+                          {claude.usageError}
+                        </p>
+                      ) : claude.limits.length === 0 ? (
+                        <p className="text-[10px] text-text-muted leading-relaxed">Checking…</p>
+                      ) : (
+                        <div className="space-y-2.5">
+                          {claude.limits.map(limit => {
+                            const left = Math.max(0, 100 - limit.percent_used);
+                            const color = usageColor(limit);
+                            const resetIn = formatResetIn(limit.resets_at, claude.now);
+                            return (
+                              <div key={`${limit.kind}-${limit.label}`}>
+                                <div className="flex items-baseline gap-2 mb-1">
+                                  <span className="text-[11px] text-text-secondary truncate">{limit.label}</span>
+                                  <span
+                                    className="text-[11px] font-semibold tabular-nums ml-auto shrink-0"
+                                    style={{ color }}
+                                  >
+                                    {Math.round(left)}% left
+                                  </span>
+                                </div>
+                                <div
+                                  className="w-full overflow-hidden"
+                                  style={{ height: 4, borderRadius: 999, background: '#1c1c1e' }}
+                                >
+                                  <motion.div
+                                    style={{ height: '100%', borderRadius: 999, background: color }}
+                                    initial={false}
+                                    animate={{ width: `${Math.min(100, Math.max(0, left))}%` }}
+                                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                                  />
+                                </div>
+                                {resetIn && (
+                                  <div className="text-[10px] text-text-muted mt-1">
+                                    Resets in {resetIn}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {claude.enabled && claude.sessions.length > 0 && (
+                        <div className="pt-1 space-y-1.5">
+                          <div className="text-[10px] text-text-muted">
+                            {claude.count} session{claude.count > 1 ? 's' : ''} running
+                          </div>
+                          {claude.sessions.map(s => (
+                            <div
+                              key={s.session_id}
+                              className="flex items-center gap-2.5 px-3 py-1.5"
+                              style={{ background: '#1c1c1e', borderRadius: 10 }}
+                            >
+                              <motion.span
+                                className="rounded-full shrink-0"
+                                style={{
+                                  width: 5,
+                                  height: 5,
+                                  background: s.working ? '#d97757' : 'rgba(255,255,255,0.3)',
+                                }}
+                                animate={s.working ? { opacity: [1, 0.35, 1] } : { opacity: 1 }}
+                                transition={s.working
+                                  ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                                  : { duration: 0.2 }}
+                              />
+                              <span className="text-[10px] text-text-secondary truncate flex-1">{s.name}</span>
+                              <span
+                                className="text-[10px] tabular-nums shrink-0 text-text-muted"
+                                style={{ color: s.working ? '#e08b6e' : undefined }}
+                              >
+                                {s.working ? 'working' : formatIdle(s.idle_seconds)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

@@ -2073,6 +2073,7 @@ version = "1.2.1"
 dependencies = [
  "cocoa",
  "core-graphics",
+ "libc",
  "log",
  "objc",
  "serde",
