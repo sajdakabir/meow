@@ -140,6 +140,26 @@ export const tauriBridge = {
     return () => {};
   },
 
+  listClaudeSessions: async () => {
+    const t = getTauri();
+    if (!t) return [];
+    try {
+      return await t.core.invoke('list_claude_sessions');
+    } catch {
+      return [];
+    }
+  },
+
+  getClaudeUsage: async (force = false) => {
+    const t = getTauri();
+    if (!t) return null;
+    try {
+      return await t.core.invoke('claude_usage', { force });
+    } catch (e) {
+      return { limits: [], plan: null, fetched_at: 0, error: String(e) };
+    }
+  },
+
   onEyeBreakNow: async (cb) => {
     const t = getTauri();
     if (t) return t.event.listen('tray-eye-break-now', () => cb());

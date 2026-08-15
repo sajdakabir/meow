@@ -23,6 +23,7 @@ A menu-bar productivity app with a Pomodoro timer, ambient sounds, cute animal c
 - **Ambient Sounds** — 8 mixable soundscapes (Rain, Forest, Ocean, Fireplace, Cafe, Wind, Birds, Thunder) with individual volume controls
 - **Focus Pals** — Animated animal companions (Luna, Rusty, Hoot, Bamboo, Clover) that react to your timer state
 - **Eye Break Reminders** — 20-20-20 rule nudges to rest your eyes, with optional strict mode that covers the screen
+- **Claude Usage** — How much of your Claude plan is left, right in the notch: session and weekly allowances with reset countdowns, plus the Claude Code sessions running on your Mac
 - **Session History** — Every focus session logged locally
 - **System Tray** — Lives in your menu bar with quick controls
 - **Always on Top** — Stays visible while you work
