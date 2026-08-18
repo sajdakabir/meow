@@ -945,7 +945,7 @@ export default function Home() {
                     <div className="p-4 mb-3 text-center" style={{ background: '#2c2c2e', borderRadius: 16 }}>
                       <div className="text-2xl mb-1">{pal.icon}</div>
                       <div className="text-sm font-semibold text-white">meow</div>
-                      <div className="text-[11px] text-text-muted mt-0.5">v1.2.0</div>
+                      <div className="text-[11px] text-text-muted mt-0.5">v1.3.0</div>
                       <p className="text-[11px] text-text-muted mt-2 leading-relaxed">
                         Stay focused. Stay cozy.<br />
                         Ambient sounds, a timer, and an adorable companion — tucked into your menu bar.
