@@ -150,6 +150,31 @@ export const tauriBridge = {
     }
   },
 
+  closeStickyNote: async () => {
+    const t = getTauri();
+    if (t) await t.core.invoke('close_sticky_note');
+  },
+
+  getStickyNote: async () => {
+    const t = getTauri();
+    if (!t) return null;
+    try {
+      return JSON.parse(await t.core.invoke('get_sticky_note'));
+    } catch {
+      return null;
+    }
+  },
+
+  saveStickyNote: async (text) => {
+    const t = getTauri();
+    if (t) await t.core.invoke('save_sticky_note', { text });
+  },
+
+  focusStickyNote: async () => {
+    const t = getTauri();
+    if (t) await t.core.invoke('focus_sticky_note');
+  },
+
   getClaudeUsage: async (force = false) => {
     const t = getTauri();
     if (!t) return null;

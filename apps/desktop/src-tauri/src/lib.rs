@@ -2,6 +2,7 @@ mod claude;
 mod claude_usage;
 mod commands;
 mod mouse_tracker;
+mod sticky;
 mod tray;
 mod windows;
 
@@ -27,6 +28,12 @@ pub fn run() {
             commands::close_eye_break,
             claude::list_claude_sessions,
             claude_usage::claude_usage,
+            sticky::open_sticky_note,
+            sticky::close_sticky_note,
+            sticky::toggle_sticky_note,
+            sticky::get_sticky_note,
+            sticky::save_sticky_note,
+            sticky::focus_sticky_note,
         ])
         .setup(|app| {
             // Accessory policy: no dock icon, but windows can float above full-screen apps.

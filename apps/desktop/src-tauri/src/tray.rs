@@ -14,6 +14,8 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .build(app)?;
     let eye_break_now = MenuItemBuilder::with_id("eye-break-now", "Eye Break Now")
         .build(app)?;
+    let sticky_note = MenuItemBuilder::with_id("sticky-note", "Sticky Note")
+        .build(app)?;
     let about = MenuItemBuilder::with_id("about", "About meow")
         .build(app)?;
     let quit = MenuItemBuilder::with_id("quit", "Quit meow")
@@ -23,6 +25,7 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let menu = MenuBuilder::new(app)
         .item(&history)
         .item(&eye_break_now)
+        .item(&sticky_note)
         .item(&about)
         .separator()
         .item(&quit)
@@ -58,6 +61,14 @@ pub fn create_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
                         crate::platform::hide_zoom_button(&win);
                     }
                 }
+            }
+            "sticky-note" => {
+                let handle = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    if let Err(e) = crate::sticky::toggle_sticky_note(handle).await {
+                        eprintln!("[sticky] tray toggle failed: {e}");
+                    }
+                });
             }
             "eye-break-now" => {
                 if let Some(w) = app.get_webview_window("popover") {

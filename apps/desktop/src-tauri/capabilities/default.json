@@ -1,7 +1,11 @@
 {
   "identifier": "default",
-  "description": "Capability for the main and companion windows",
-  "windows": ["popover", "companion"],
+  "description": "Capability for the main, companion and sticky note windows",
+  "windows": [
+    "popover",
+    "companion",
+    "sticky"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-show",

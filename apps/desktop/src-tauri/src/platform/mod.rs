@@ -18,3 +18,6 @@ pub use macos::prevent_window_hiding;
 
 #[cfg(target_os = "macos")]
 pub use macos::hide_zoom_button;
+
+#[cfg(target_os = "macos")]
+pub use macos::accept_first_mouse;

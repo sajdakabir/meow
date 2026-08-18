@@ -1,5 +1,5 @@
 use tauri::{AppHandle, Manager};
-use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
 
 /// Resize the popover window height (clamped 45-600).
@@ -164,11 +164,34 @@ pub async fn close_eye_break(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// Register the global Cmd+Shift+F shortcut to toggle the popover.
+/// Register meow's global shortcuts.
+///
+///   Cmd+Shift+F — toggle the popover
+///   Cmd+Shift+S — toggle the sticky note
+///
+/// Both handlers filter on `Pressed`: the plugin fires once on key-down and
+/// again on key-up, so an unfiltered toggle would run twice and undo itself.
 pub fn register_shortcuts(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let shortcut = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
-    app.global_shortcut().on_shortcut(shortcut, |app, _shortcut, _event| {
+    let popover = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyF);
+    app.global_shortcut().on_shortcut(popover, |app, _shortcut, event| {
+        if event.state() != ShortcutState::Pressed {
+            return;
+        }
         let _ = crate::windows::toggle_popover(app);
     })?;
+
+    let sticky = Shortcut::new(Some(Modifiers::SUPER | Modifiers::SHIFT), Code::KeyS);
+    app.global_shortcut().on_shortcut(sticky, |app, _shortcut, event| {
+        if event.state() != ShortcutState::Pressed {
+            return;
+        }
+        let handle = app.clone();
+        tauri::async_runtime::spawn(async move {
+            if let Err(e) = crate::sticky::toggle_sticky_note(handle).await {
+                eprintln!("[sticky] shortcut toggle failed: {e}");
+            }
+        });
+    })?;
+
     Ok(())
 }

@@ -134,8 +134,12 @@ pub fn register_space_observer(handle: tauri::AppHandle) {
                     // Activate the app so orderFrontRegardless works in the
                     // new Space. Accessory-policy apps don't steal focus.
                     activate_app_for_input();
-                    if let Some(win) = h2.get_webview_window("popover") {
-                        set_above_menu_bar(&win);
+                    // Re-assert every window that is meant to follow the
+                    // user across Spaces, not just the notch.
+                    for label in ["popover", crate::sticky::WINDOW_LABEL] {
+                        if let Some(win) = h2.get_webview_window(label) {
+                            set_above_menu_bar(&win);
+                        }
                     }
                 });
             }

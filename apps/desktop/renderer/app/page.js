@@ -950,6 +950,25 @@ export default function Home() {
                         Stay focused. Stay cozy.<br />
                         Ambient sounds, a timer, and an adorable companion — tucked into your menu bar.
                       </p>
+
+                      {/* Global shortcuts — the only place the sticky note is
+                          documented, since it has no row of its own. */}
+                      <div className="mt-3 space-y-1.5">
+                        {[
+                          ['\u2318\u21E7F', 'Show / hide meow'],
+                          ['\u2318\u21E7S', 'Sticky note'],
+                        ].map(([keys, label]) => (
+                          <div key={keys} className="flex items-center justify-center gap-2">
+                            <kbd
+                              className="px-1.5 py-0.5 text-[10px] font-medium text-text-secondary not-italic"
+                              style={{ background: '#1c1c1e', borderRadius: 6, fontFamily: 'inherit' }}
+                            >
+                              {keys}
+                            </kbd>
+                            <span className="text-[10px] text-text-muted">{label}</span>
+                          </div>
+                        ))}
+                      </div>
                       <div className="flex items-center justify-center gap-3 mt-3">
                         <button
                           onClick={() => { tauriBridge.openUrl('https://github.com/sajdakabir/meow'); tauriBridge.close(); }}
